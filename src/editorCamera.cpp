@@ -16,12 +16,16 @@ void EditorCamera::update(float deltaTime) {
 void EditorCamera::processMouseMovement(float xoffset, float yoffset) {
     float sensitivity = 0.1f;
     yaw += xoffset * sensitivity;
-    pitch += yoffset * sensitivity;
+
+    if (invertPitch)
+        pitch += yoffset * sensitivity;
+    else
+        pitch -= yoffset * sensitivity;
 
     pitch = std::clamp(pitch, -89.0f, 89.0f);
-
     updateCameraVectors();
 }
+
 
 void EditorCamera::processMouseScroll(float yoffset) {
     distance -= yoffset;
@@ -54,6 +58,16 @@ void EditorCamera::setTarget(const glm::vec3& target) {
 
 glm::vec3 EditorCamera::getTarget() const {
     return target;
+}
+
+// Flag to invert pitch 
+bool invertPitch = false;
+
+//Camera debug window
+void EditorCamera::renderDebugWindow() {
+    ImGui::Begin("Camera Debug");
+    ImGui::Checkbox("Invert Vertical Orbit", &invertPitch);
+    ImGui::End();
 }
 
 static bool isDragging = false;
