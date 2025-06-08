@@ -5,6 +5,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 
+
+
+
 class EditorCamera {
 public:
     EditorCamera(float yaw = -90.0f, float pitch = 0.0f, float distance = 5.0f);
@@ -31,7 +34,10 @@ private:
     void updateCameraVectors();
 };
 
+extern EditorCamera camera;
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 
 #endif // EDITOR_CAMERA_H
