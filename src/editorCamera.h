@@ -22,6 +22,11 @@ public:
     void setTarget(const glm::vec3& target);
     glm::vec3 getTarget() const;
 
+    // ImGui camera debug
+    void renderDebugWindow();
+
+    bool invertPitch = false; 
+
 private:
     float yaw;
     float pitch;
@@ -35,6 +40,7 @@ private:
 };
 
 extern EditorCamera camera;
+
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
