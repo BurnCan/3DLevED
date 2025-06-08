@@ -9,6 +9,10 @@
 #include <sstream>
 #include <string>
 #include "shader_loader.h"
+#include "editorCamera.h"
+
+
+
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
 
@@ -18,12 +22,21 @@ std::string loadShaderSource(const char* filepath);
 GLuint createShaderProgram(const char* vertexPath, const char* fragmentPath);
 
 //Camera Variables
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+//glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 //Camera Timing to control movement speed
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f;
+//Editor Camera
+EditorCamera camera;
+float lastX = WIDTH / 2.0f;
+float lastY = HEIGHT / 2.0f;
+bool firstMouse = true;
+
+
+
+
 
 int main()
 {
@@ -89,6 +102,10 @@ int main()
     glEnableVertexAttribArray(1);
 
     GLuint shaderProgram = createShaderProgram("shaders/basic.vert", "shaders/basic.frag");
+    
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -107,7 +124,8 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::mat4 view = camera.GetViewMatrix();
+
         //End NEW
 
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
@@ -133,26 +151,28 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window)
-{
-    float cameraSpeed = 2.5f * deltaTime;
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
+//void processInput(GLFWwindow* window)
+//{
+    //float cameraSpeed = 2.5f * deltaTime;
+
+    //if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    //    glfwSetWindowShouldClose(window, true);
+    //if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    //    cameraPos += cameraSpeed * cameraFront;
+    //if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    //    cameraPos -= cameraSpeed * cameraFront;
+    //if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    //    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    //if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    //    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     // New: move up and down
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraUp;
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraUp;
-}
+    //if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    //    cameraPos += cameraSpeed * cameraUp;
+    //if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    //    cameraPos -= cameraSpeed * cameraUp;
+//}
 
 
 std::string loadShaderSource(const char* filepath)
