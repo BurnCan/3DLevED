@@ -56,24 +56,40 @@ glm::vec3 EditorCamera::getTarget() const {
     return target;
 }
 
-static float lastX = 800.0f / 2.0f; // or use a defined WIDTH
-static float lastY = 600.0f / 2.0f;
-static bool firstMouse = true;
+static bool isDragging = false;
+static float lastX = 0.0f;
+static float lastY = 0.0f;
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    if (firstMouse) {
-        lastX = static_cast<float>(xpos);
-        lastY = static_cast<float>(ypos);
-        firstMouse = false;
-    }
+    // Optional: Don't rotate if ImGui wants mouse
+    // if (ImGui::GetIO().WantCaptureMouse) return;
 
-    float xoffset = static_cast<float>(xpos) - lastX;
-    float yoffset = lastY - static_cast<float>(ypos); // reversed since y-coordinates go bottom to top
+    if (!isDragging) return;
 
-    lastX = static_cast<float>(xpos);
-    lastY = static_cast<float>(ypos);
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+
+    lastX = xpos;
+    lastY = ypos;
 
     camera.processMouseMovement(xoffset, yoffset);
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            isDragging = true;
+
+            // Avoid a jump by syncing lastX/lastY with current mouse pos
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            lastX = static_cast<float>(xpos);
+            lastY = static_cast<float>(ypos);
+        }
+        else if (action == GLFW_RELEASE) {
+            isDragging = false;
+        }
+    }
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
