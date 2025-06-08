@@ -35,7 +35,7 @@ EditorCamera camera;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
-EditorCamera::renderCameraDebugWindow();
+
 
 
 
@@ -173,7 +173,7 @@ int main()
         // Swap buffers
         glfwSwapBuffers(window);
     }
-4
+
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
