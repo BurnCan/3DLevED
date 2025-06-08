@@ -124,7 +124,7 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 view = camera.getViewMatrix();
 
         //End NEW
 
