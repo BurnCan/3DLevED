@@ -1,6 +1,7 @@
 #include "editorCamera.h"
 #include <glm/gtc/constants.hpp>
 #include <algorithm>
+#include <GLFW/glfw3.h>
 
 EditorCamera::EditorCamera(float yaw, float pitch, float distance)
     : yaw(yaw), pitch(pitch), distance(distance), target(0.0f), up(0.0f, 1.0f, 0.0f)
