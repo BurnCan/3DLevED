@@ -16,7 +16,7 @@ void EditorCamera::update(float deltaTime) {
 void EditorCamera::processMouseMovement(float xoffset, float yoffset) {
     float sensitivity = 0.1f;
     yaw += xoffset * sensitivity;
-    pitch -= yoffset * sensitivity;
+    pitch += yoffset * sensitivity;
 
     pitch = std::clamp(pitch, -89.0f, 89.0f);
 
