@@ -104,6 +104,7 @@ int main()
     GLuint shaderProgram = createShaderProgram("shaders/basic.vert", "shaders/basic.frag");
     
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
