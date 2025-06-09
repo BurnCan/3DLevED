@@ -61,12 +61,12 @@ glm::vec3 EditorCamera::getTarget() const {
 }
 
 // Flag to invert pitch 
-bool invertPitch = false;
+bool invertPitch = true;
 
 //Camera debug window
 void EditorCamera::renderDebugWindow() {
     ImGui::Begin("Camera Debug");
-    ImGui::Checkbox("Invert Vertical Orbit", &invertPitch);
+    ImGui::Checkbox("Invert processMouseMovement Pitch", &invertPitch);
     ImGui::End();
 }
 
