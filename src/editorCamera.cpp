@@ -76,7 +76,7 @@ static float lastY = 0.0f;
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     // Optional: Don't rotate if ImGui wants mouse
-    // if (ImGui::GetIO().WantCaptureMouse) return;
+    if (ImGui::GetIO().WantCaptureMouse) return;
 
     if (!isDragging) return;
 
