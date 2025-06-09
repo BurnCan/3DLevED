@@ -143,6 +143,8 @@ int main()
 
         // ImGui windows 
         camera.renderDebugWindow();
+        
+        
 
 
         // Clear and draw your scene
@@ -163,7 +165,8 @@ int main()
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 12); // Replace as needed
 
-        // Render ImGui
+        
+        // Render ImGui 
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -177,6 +180,12 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+
+    // Cleanup ImGui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
 
     glfwTerminate();
     return 0;
@@ -245,10 +254,10 @@ GLuint createShaderProgram(const char* vertexPath, const char* fragmentPath)
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    
 
     return shaderProgram;
 }
+
+
 
