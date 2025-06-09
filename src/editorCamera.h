@@ -25,7 +25,7 @@ public:
     // ImGui camera debug
     void renderDebugWindow();
 
-    bool invertPitch = false; 
+    bool invertPitch = true; 
 
 private:
     float yaw;
