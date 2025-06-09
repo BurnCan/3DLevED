@@ -49,7 +49,7 @@ cd 3DLevED
 ```bash
 mkdir build && cd build
 cmake -G "MinGW Makefiles" ..
-mingw32-make
+mingw32-make -j4
 ```
 
 ### 7. Run
@@ -91,7 +91,7 @@ git clone https://github.com/BurnCan/3DLevED
 cd 3DLevED
 mkdir build && cd build
 cmake ..
-make
+make -j4
 ```
 
 ### 4. Run
@@ -120,7 +120,7 @@ git clone https://github.com/BurnCan/3DLevED
 cd 3DLevED
 mkdir build && cd build
 cmake ..
-make
+make -j4
 ```
 
 ### 3. Run
@@ -157,6 +157,97 @@ OpenGLProjectTemplate/
 ```
 
 ---
+
+🛠️ Rebuilding the Project
+Depending on your situation, choose one of the following options to rebuild the project.
+
+✅ Option 1: Rebuild Normally (after code or shader edits)
+```bash
+
+cd build
+```
+# OS-specific build command below
+🪟Windows (MSYS2):
+
+```bash
+mingw32-make -j4
+```
+🍏🐧macOS / Linux:
+
+```bash
+
+make -j4
+```
+-j4 runs 4 compilation jobs in parallel. Adjust the number to match your CPU.
+
+🔄 Option 2: Rebuild After CMake Configuration Changes
+```bash
+cd build
+# Remove cached build files
+rm CMakeCache.txt
+rm -rf CMakeFiles
+```
+# OS-specific cmake and build commands below
+🪟Windows (MSYS2):
+
+```bash
+
+cmake -G "MinGW Makefiles" ..
+mingw32-make -j4
+```
+🍏🐧macOS / Linux:
+
+```bash
+
+cmake ..
+make -j4
+```
+🧹 Option 3: Full Clean — Delete and Reclone the Project
+```bash
+cd ..
+rm -rf 3DLevED
+git clone https://github.com/BurnCan/3DLevED
+cd 3DLevED
+mkdir build && cd build
+```
+# OS-specific cmake and build commands below
+🪟Windows (MSYS2):
+
+```bash
+cmake -G "MinGW Makefiles" ..
+mingw32-make -j4
+```
+🍏🐧macOS / Linux:
+
+```bash
+
+cmake ..
+make -j4
+```
+This deletes the entire project and gets a fresh copy from GitHub.
+
+🗂️ Cloning a Specific Branch (Optional)
+To clone a specific branch (e.g., development) instead of the default:
+
+```bash
+git clone --branch development --single-branch https://github.com/BurnCan/3DLevED
+```
+This clones only the specified branch, reducing download size and avoiding unrelated history.
+
+---
+
+⚠️ Note on Working with Shaders:
+The shaders/ directory is automatically copied into the build/bin/ directory by CMake. This ensures that the built application has access to the required shader files.
+
+💡 Important: When modifying shaders, always edit them in the main project’s shaders/ directory, not in the build/bin/shaders/ copy. The files in build/bin are overwritten every time you re-run CMake or rebuild the project.
+
+To apply your shader changes:
+
+Make edits in shaders/ (in the project root).
+
+Rebuild the project using make -j4 (or mingw32-make -j4 for windows).
+
+This will ensure that your changes are properly copied into the app bundle and used at runtime.
 
 ## ✅ You're good to go!
 
