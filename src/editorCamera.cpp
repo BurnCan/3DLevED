@@ -60,8 +60,7 @@ glm::vec3 EditorCamera::getTarget() const {
     return target;
 }
 
-// Flag to invert pitch 
-bool invertPitch = true;
+
 
 //Camera debug window
 void EditorCamera::renderDebugWindow() {
