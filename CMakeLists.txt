@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(OpenGLProjectTemplate)
+project(3DLevED)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,11 +13,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 
 # Copy shader files to the appropriate location
 if(APPLE)
-    set(MACOSX_BUNDLE_BUNDLE_NAME "OpenGLApp")
-    set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.example.openglapp")
+    set(MACOSX_BUNDLE_BUNDLE_NAME "3DLevED")
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.example.3dleved")
     set(MACOSX_BUNDLE TRUE)
 
-    set(SHADER_BUNDLE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/OpenGLApp.app/Contents/Resources")
+    set(SHADER_BUNDLE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/3DLevED.app/Contents/Resources")
     file(COPY shaders DESTINATION ${SHADER_BUNDLE_PATH})
 else()
     file(COPY shaders DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
@@ -77,13 +77,13 @@ set(IMGUI_SOURCES
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
 file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS src/*.h)
 
-add_executable(OpenGLApp MACOSX_BUNDLE
+add_executable(3DLevED MACOSX_BUNDLE
   ${SRC_FILES}
   ${HEADER_FILES}
   ${IMGUI_SOURCES}
 )
 
-target_include_directories(OpenGLApp
+target_include_directories(3DLevED
   PRIVATE
     ${imgui_SOURCE_DIR}
     ${imgui_SOURCE_DIR}/backends
@@ -94,16 +94,16 @@ target_include_directories(OpenGLApp
 
 # ----------- Link Libraries ------------ #
 
-target_link_libraries(OpenGLApp
+target_link_libraries(3DLevED
   PRIVATE
     glad
     glfw
 )
 
 if(WIN32)
-    target_link_libraries(OpenGLApp PRIVATE opengl32)
+    target_link_libraries(3DLevED PRIVATE opengl32)
 elseif(APPLE)
-    target_link_libraries(OpenGLApp PRIVATE "-framework OpenGL")
+    target_link_libraries(3DLevED PRIVATE "-framework OpenGL")
 elseif(UNIX)
-    target_link_libraries(OpenGLApp PRIVATE GL dl pthread)
+    target_link_libraries(3DLevED PRIVATE GL dl pthread)
 endif()
