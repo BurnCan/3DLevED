@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x  # Enable debugging: print each command before executing
 
 set -e
 
