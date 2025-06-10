@@ -21,37 +21,32 @@ fi
 # Extract repo name from URL
 REPO_NAME=$(basename -s .git "$REPO_URL")
 
-# Save original directory
-ORIGINAL_DIR=$(pwd)
+# Save HOME directory as the root destination
+HOME_DIR="$HOME"
 
 # Create temporary folder and copy this script
 TEMP_DIR=$(mktemp -d)
 SCRIPT_NAME=$(basename "$0")
 cp "$0" "$TEMP_DIR/"
+cd "$TEMP_DIR"
 
-# Clone target path
-CLONE_DIR="$ORIGINAL_DIR/$REPO_NAME"
-
-# Clean existing repo directory
-if [ -d "$CLONE_DIR" ]; then
-    echo "Removing existing directory: $CLONE_DIR"
-    rm -rf "$CLONE_DIR"
+# Remove existing project directory from HOME if it exists
+TARGET_DIR="$HOME_DIR/$REPO_NAME"
+if [ -d "$TARGET_DIR" ]; then
+    echo "Removing existing directory: $TARGET_DIR"
+    rm -rf "$TARGET_DIR"
 fi
 
-# Clone the specific branch
-echo "Cloning branch '$BRANCH' of $REPO_URL into $CLONE_DIR..."
-git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$CLONE_DIR"
+# Clone the repository directly into HOME
+echo "Cloning branch '$BRANCH' of $REPO_URL into $HOME_DIR..."
+git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$TARGET_DIR"
 
-# Move into cloned repo
-cd "$CLONE_DIR" || exit 1
-
-# Build
-echo "Starting build..."
+# Enter the project and build
+cd "$TARGET_DIR"
 mkdir -p build
 cd build
 
 OS_NAME="$(uname)"
-
 if [[ "$OS_NAME" == "Darwin" ]]; then
     echo "Detected macOS."
     cmake ..
@@ -69,14 +64,12 @@ else
     exit 1
 fi
 
-# Copy built repo to original directory
-cd "$ORIGINAL_DIR"
-cp -r "$CLONE_DIR" .
+echo "Build complete in $TARGET_DIR/build."
 
-# Clean up
-echo "Build files copied to $ORIGINAL_DIR/$REPO_NAME."
+# Cleanup
 echo "Removing temporary directory: $TEMP_DIR"
 rm -rf "$TEMP_DIR"
 
-echo "Done."
+echo "Done. Project is located at: $TARGET_DIR"
+
 
