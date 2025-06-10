@@ -200,7 +200,7 @@ int main()
 
         // Draw
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 12); // Replace as needed
+        glDrawArrays(GL_TRIANGLES, 0, 36); // Replace as needed
 
         
         // Render ImGui 
