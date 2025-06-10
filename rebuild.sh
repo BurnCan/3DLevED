@@ -1,87 +1,66 @@
 #!/bin/bash
-set -x  # Enable debugging: print each command before executing
-
 set -e
+set -x
 
-# Detect where the script is running from
+# Absolute path to the script
 SCRIPT_PATH=$(realpath "$0")
 SCRIPT_NAME=$(basename "$SCRIPT_PATH")
 
-# Create a temporary directory
-TEMP_DIR=$(mktemp -d)
-
-# Copy the script to the temporary directory
-cp "$SCRIPT_PATH" "$TEMP_DIR/"
-
-# Change to the temporary directory
-cd "$TEMP_DIR"
-
-# Execute the script from the temp directory
-exec "$TEMP_DIR/$SCRIPT_NAME"
-
-# Below this point will not be executed until the script is re-run from the temp directory
-
-# Ask for user input
-echo "Enter the Git repository URL (e.g., https://github.com/yourusername/your-repo.git):"
-read -r REPO_URL
-
-if [ -z "$REPO_URL" ]; then
-    echo "Error: No URL provided."
-    exit 1
+# Prevent infinite recursion by only copying if not in /tmp
+if [[ "$SCRIPT_PATH" != /tmp/* ]]; then
+    TEMP_DIR=$(mktemp -d)
+    cp "$SCRIPT_PATH" "$TEMP_DIR/"
+    cd "$TEMP_DIR"
+    exec "$TEMP_DIR/$SCRIPT_NAME"
 fi
 
-echo "Enter the branch to clone (leave blank for 'main'):"
-read -r BRANCH
+# Move to home directory
+cd ~
 
-# Default to main if blank
-if [ -z "$BRANCH" ]; then
-    BRANCH="main"
-fi
+# Prompt for repo URL
+read -p "Enter the GitHub repo URL [https://github.com/yourusername/your-repo.git]: " REPO_URL
+REPO_URL="${REPO_URL:-https://github.com/yourusername/your-repo.git}"
 
 # Extract repo name from URL
 REPO_NAME=$(basename -s .git "$REPO_URL")
 
-# Save HOME directory as the root destination
-HOME_DIR="$HOME"
+# Prompt for branch name (default to main)
+read -p "Enter the branch to clone [main]: " BRANCH
+BRANCH="${BRANCH:-main}"
 
-# Remove the original repo directory from HOME if it exists
-TARGET_DIR="$HOME_DIR/$REPO_NAME"
-if [ -d "$TARGET_DIR" ]; then
-    echo "Removing existing directory: $TARGET_DIR"
-    rm -rf "$TARGET_DIR"
+# Remove existing repo directory if it exists
+if [ -d "$REPO_NAME" ]; then
+    echo "Removing existing directory $REPO_NAME..."
+    rm -rf "$REPO_NAME"
 fi
 
-# Clone the repository directly into HOME
-echo "Cloning branch '$BRANCH' of $REPO_URL into $HOME_DIR..."
-git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$HOME_DIR/$REPO_NAME"
+# Clone the specified branch into home directory
+git clone --branch "$BRANCH" --single-branch "$REPO_URL"
 
-# Enter the project and build
-cd "$HOME_DIR/$REPO_NAME"
-mkdir -p build
+# Build
+cd "$REPO_NAME"
+mkdir build
 cd build
 
-OS_NAME="$(uname)"
-if [[ "$OS_NAME" == "Darwin" ]]; then
-    echo "Detected macOS."
+UNAME=$(uname)
+
+if [[ "$UNAME" == "Darwin" ]]; then
     cmake ..
     make -j4
-elif [[ "$OS_NAME" == "Linux" ]]; then
-    echo "Detected Linux."
+elif [[ "$UNAME" == "Linux" ]]; then
     cmake ..
     make -j4
-elif [[ "$OS_NAME" =~ MINGW64_NT|MSYS_NT|CYGWIN_NT ]]; then
-    echo "Detected Windows (MSYS2/MINGW64)."
+elif [[ "$UNAME" =~ MINGW64_NT|MSYS_NT ]]; then
     cmake -G "MinGW Makefiles" ..
     mingw32-make -j4
 else
-    echo "Unsupported OS: $OS_NAME"
+    echo "Unsupported platform: $UNAME"
     exit 1
 fi
 
-echo "Build complete in $TARGET_DIR/build."
+# Done
+echo "Build completed for $REPO_NAME"
 
 # Cleanup
-echo "Removing temporary directory: $TEMP_DIR"
-rm -rf "$TEMP_DIR"
-
-echo "Done. Project is located at: $TARGET_DIR"
+cd ~
+rm -rf "$(dirname "$SCRIPT_PATH")"
