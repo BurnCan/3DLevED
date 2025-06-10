@@ -2,6 +2,25 @@
 
 set -e
 
+# Detect where the script is running from
+SCRIPT_PATH=$(realpath "$0")
+SCRIPT_NAME=$(basename "$SCRIPT_PATH")
+
+# Create a temporary directory
+TEMP_DIR=$(mktemp -d)
+
+# Copy the script to the temporary directory
+cp "$SCRIPT_PATH" "$TEMP_DIR/"
+
+# Change to the temporary directory
+cd "$TEMP_DIR"
+
+# Execute the script from the temp directory
+exec "$TEMP_DIR/$SCRIPT_NAME"
+
+# Below this point will not be executed until the script is re-run from the temp directory
+
+# Ask for user input
 echo "Enter the Git repository URL (e.g., https://github.com/yourusername/your-repo.git):"
 read -r REPO_URL
 
@@ -24,13 +43,7 @@ REPO_NAME=$(basename -s .git "$REPO_URL")
 # Save HOME directory as the root destination
 HOME_DIR="$HOME"
 
-# Create temporary folder and copy this script
-TEMP_DIR=$(mktemp -d)
-SCRIPT_NAME=$(basename "$0")
-cp "$0" "$TEMP_DIR/"
-cd "$TEMP_DIR"
-
-# Remove existing project directory from HOME if it exists
+# Remove the original repo directory from HOME if it exists
 TARGET_DIR="$HOME_DIR/$REPO_NAME"
 if [ -d "$TARGET_DIR" ]; then
     echo "Removing existing directory: $TARGET_DIR"
@@ -39,10 +52,10 @@ fi
 
 # Clone the repository directly into HOME
 echo "Cloning branch '$BRANCH' of $REPO_URL into $HOME_DIR..."
-git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$TARGET_DIR"
+git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$HOME_DIR/$REPO_NAME"
 
 # Enter the project and build
-cd "$TARGET_DIR"
+cd "$HOME_DIR/$REPO_NAME"
 mkdir -p build
 cd build
 
@@ -71,5 +84,3 @@ echo "Removing temporary directory: $TEMP_DIR"
 rm -rf "$TEMP_DIR"
 
 echo "Done. Project is located at: $TARGET_DIR"
-
-
