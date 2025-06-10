@@ -51,7 +51,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Triangle-Based Cube", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "3DLevED", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
