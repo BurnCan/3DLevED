@@ -239,7 +239,7 @@ This clones only the specified branch, reducing download size and avoiding unrel
 ## ⚠️ Note on Working with Shaders:
 The shaders/ directory is automatically copied into the build/bin/ directory by CMake. This ensures that the built application has access to the required shader files.
 
-💡 Important: When modifying shaders, always edit them in the main project’s shaders/ directory, not in the build/bin/shaders/ copy. The files in build/bin are overwritten every time you re-run CMake or rebuild the project.
+💡 **Important: When modifying shaders, always edit them in the main project’s shaders/ directory, not in the build/bin/shaders/ copy. The files in build/bin are overwritten every time you re-run CMake or rebuild the project.**
 
 To apply your shader changes:
 
