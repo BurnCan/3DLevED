@@ -34,14 +34,16 @@ mingw32-make -j4
 
 echo Build complete.
 
-:: Prompt to delete
-set /p DELETE=Delete temp folder %TMP_DIR% after exit? (y/N): 
-if /I "%DELETE%"=="y" (
-    cd /d %TEMP%
-    rmdir /s /q "%TMP_DIR%"
-    echo Removed %TMP_DIR%.
-) else (
-    echo Temporary files remain at %TMP_DIR%.
-)
+:: Copy output to the repo-named directory
+set OUTPUT_DIR=%TMP_DIR%\%REPO_NAME%
+mkdir "%OUTPUT_DIR%"
+xcopy /E /I /Y ..\bin\* "%OUTPUT_DIR%"
+
+echo Build files copied to %OUTPUT_DIR%.
+
+:: Automatically remove temp directory
+cd /d %TEMP%
+rmdir /s /q "%TMP_DIR%"
+echo Removed %TMP_DIR%.
 
 endlocal
