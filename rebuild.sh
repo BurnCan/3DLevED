@@ -1,12 +1,17 @@
 ﻿#!/bin/bash
 set -e
 
-# Resolve the real path of the script
-SCRIPT_PATH="$(realpath "$0")"
-SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
-SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
+# Get absolute path to this script
+if command -v realpath &> /dev/null; then
+  SCRIPT_PATH=$(realpath "$0")
+else
+  SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+fi
 
-# Safeguard: if not already in /tmp or macOS temp path, re-run from temp
+SCRIPT_NAME=$(basename "$SCRIPT_PATH")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+
+# Avoid infinite self-copying by only doing this if not already running in a temp folder
 if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; then
   TEMP_DIR=$(mktemp -d)
   cp "$SCRIPT_PATH" "$TEMP_DIR/"
@@ -14,61 +19,63 @@ if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; the
   exec "$TEMP_DIR/$SCRIPT_NAME"
 fi
 
-# Ask for repository URL
-read -p "Enter the Git repository URL (e.g., https://github.com/yourusername/your-repo.git): " REPO_URL
+# Prompt for repo URL
+read -p "Enter the git repository URL (e.g., https://github.com/yourusername/your-repo.git): " REPO_URL
 REPO_URL=${REPO_URL:-"https://github.com/yourusername/your-repo.git"}
 
-# Ask for branch name
-read -p "Enter branch name to clone (leave empty for default): " BRANCH
+# Prompt for branch name (optional)
+read -p "Enter the branch name to clone (leave blank for default): " BRANCH_NAME
 
-# Extract repo name
+# Extract repo name from URL
 REPO_NAME=$(basename -s .git "$REPO_URL")
-CLONE_DIR="$HOME/$REPO_NAME"
 
-# Remove old directory
-echo "[INFO] Removing existing directory at $CLONE_DIR"
-rm -rf "$CLONE_DIR"
+# Calculate target clone directory (one level up from where the script was first run)
+TARGET_DIR="$HOME/$REPO_NAME"
+cd "$HOME"
 
-# Clone repo
-echo "[INFO] Cloning repository..."
-if [[ -n "$BRANCH" ]]; then
-  git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$CLONE_DIR"
-else
-  git clone "$REPO_URL" "$CLONE_DIR"
+# Remove existing repo if it exists
+if [ -d "$TARGET_DIR" ]; then
+  echo "[INFO] Removing existing directory $TARGET_DIR"
+  rm -rf "$TARGET_DIR"
 fi
 
-# Build
-cd "$CLONE_DIR"
+# Clone repo into home directory
+if [[ -n "$BRANCH_NAME" ]]; then
+  echo "[INFO] Cloning $REPO_URL (branch: $BRANCH_NAME)..."
+  git clone --branch "$BRANCH_NAME" --single-branch "$REPO_URL"
+else
+  echo "[INFO] Cloning $REPO_URL (default branch)..."
+  git clone "$REPO_URL"
+fi
+
+cd "$TARGET_DIR"
+
+# Create build directory
 mkdir -p build
 cd build
 
-echo "[INFO] Running CMake and build..."
+# Detect platform and build accordingly
+OS_NAME=$(uname)
+echo "[INFO] Detected OS: $OS_NAME"
 
-UNAME_OUT="$(uname -s)"
-case "${UNAME_OUT}" in
-    Linux*|Darwin*)
-        cmake ..
-        make -j4
-        ;;
-    MINGW*|MSYS*|CYGWIN*)
-        cmake -G "MinGW Makefiles" ..
-        mingw32-make -j4
-        ;;
-    *)
-        echo "[ERROR] Unsupported platform: ${UNAME_OUT}"
-        exit 1
-        ;;
-esac
-
-# Optional copy (skip if same directory)
-SOURCE_DIR="$(pwd)/.."
-DEST_DIR="$HOME/$REPO_NAME"
-
-if [ "$SOURCE_DIR" != "$DEST_DIR" ]; then
-  echo "[INFO] Copying build output to $DEST_DIR"
-  cp -r "$SOURCE_DIR" "$DEST_DIR"
+if [[ "$OS_NAME" == "Darwin" ]]; then
+  echo "[INFO] Building for macOS..."
+  cmake ..
+  make -j4
+elif [[ "$OS_NAME" == "Linux" ]]; then
+  echo "[INFO] Building for Linux..."
+  cmake ..
+  make -j4
 else
-  echo "[INFO] Skipping copy: source and destination are the same ($SOURCE_DIR)"
+  echo "[INFO] Building for Windows (MinGW assumed)..."
+  cmake -G "MinGW Makefiles" ..
+  mingw32-make -j4
 fi
 
-echo "[SUCCESS] Build completed."
+echo "[INFO] Build complete."
+
+# Remove temp directory
+echo "[INFO] Cleaning up temporary files..."
+rm -rf "$SCRIPT_DIR"
+
+echo "[INFO] Done. Project is located at $TARGET_DIR"
