@@ -1,66 +1,77 @@
-#!/bin/bash
+﻿#!/usr/bin/env bash
 set -e
-set -x
 
-# Absolute path to the script
+# Resolve the full path of the script
 SCRIPT_PATH=$(realpath "$0")
 SCRIPT_NAME=$(basename "$SCRIPT_PATH")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 
-# Prevent infinite recursion by only copying if not in /tmp
-if [[ "$SCRIPT_PATH" != /tmp/* ]]; then
+# Check if we're already in a temporary directory (Linux or macOS)
+if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; then
+    # Create a new temporary directory
     TEMP_DIR=$(mktemp -d)
+
+    # Copy only the script to the temp dir and re-run from there
     cp "$SCRIPT_PATH" "$TEMP_DIR/"
     cd "$TEMP_DIR"
     exec "$TEMP_DIR/$SCRIPT_NAME"
 fi
 
-# Move to home directory
-cd ~
+# From here on, we're running inside a temp dir
+echo "[INFO] Running from temp directory: $SCRIPT_DIR"
 
-# Prompt for repo URL
-read -p "Enter the GitHub repo URL [https://github.com/yourusername/your-repo.git]: " REPO_URL
-REPO_URL="${REPO_URL:-https://github.com/yourusername/your-repo.git}"
+# Prompt for the repository URL
+read -p "Enter the Git repository URL [example: https://github.com/yourusername/your-repo.git]: " REPO_URL
+REPO_URL=${REPO_URL:-"https://github.com/yourusername/your-repo.git"}
 
 # Extract repo name from URL
 REPO_NAME=$(basename -s .git "$REPO_URL")
 
-# Prompt for branch name (default to main)
-read -p "Enter the branch to clone [main]: " BRANCH
-BRANCH="${BRANCH:-main}"
+# Prompt for branch (optional)
+read -p "Enter the branch name to clone [default: main]: " BRANCH
+BRANCH=${BRANCH:-main}
 
-# Remove existing repo directory if it exists
-if [ -d "$REPO_NAME" ]; then
-    echo "Removing existing directory $REPO_NAME..."
+# Navigate to home directory or root project directory
+cd ~
+
+# Remove existing project directory if it exists
+if [[ -d "$REPO_NAME" ]]; then
+    echo "[INFO] Removing existing directory: $REPO_NAME"
     rm -rf "$REPO_NAME"
 fi
 
-# Clone the specified branch into home directory
+# Clone the desired branch
+echo "[INFO] Cloning $REPO_URL (branch: $BRANCH)"
 git clone --branch "$BRANCH" --single-branch "$REPO_URL"
 
-# Build
+# Enter the repo directory
 cd "$REPO_NAME"
-mkdir build
+
+# Create and enter build directory
+mkdir -p build
 cd build
 
-UNAME=$(uname)
-
-if [[ "$UNAME" == "Darwin" ]]; then
-    cmake ..
-    make -j4
-elif [[ "$UNAME" == "Linux" ]]; then
-    cmake ..
-    make -j4
-elif [[ "$UNAME" =~ MINGW64_NT|MSYS_NT ]]; then
+# Detect platform
+OS="$(uname -s)"
+if [[ "$OS" == "MINGW"* || "$OS" == "MSYS"* || "$OS" == "CYGWIN"* ]]; then
+    echo "[INFO] Detected Windows environment (MSYS2). Using MinGW Makefiles."
     cmake -G "MinGW Makefiles" ..
     mingw32-make -j4
 else
-    echo "Unsupported platform: $UNAME"
-    exit 1
+    echo "[INFO] Detected Unix-like environment. Using default Makefiles."
+    cmake ..
+    make -j4
 fi
 
-# Done
-echo "Build completed for $REPO_NAME"
+# Return to parent of build directory (repo root)
+cd ..
 
-# Cleanup
-cd ~
-rm -rf "$(dirname "$SCRIPT_PATH")"
+# Copy build artifacts to target location
+echo "[INFO] Copying build output to ~/$REPO_NAME"
+cp -r . ~/"$REPO_NAME"
+
+# Cleanup temp directory
+echo "[INFO] Cleaning up temporary directory: $SCRIPT_DIR"
+rm -rf "$SCRIPT_DIR"
+
+echo "[✅] Build completed and copied to ~/$REPO_NAME"
