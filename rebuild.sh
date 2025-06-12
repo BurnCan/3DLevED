@@ -1,17 +1,12 @@
 ﻿#!/bin/bash
 set -e
 
-# Get absolute path to this script
-if command -v realpath &> /dev/null; then
-  SCRIPT_PATH=$(realpath "$0")
-else
-  SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
-fi
-
+# Resolve absolute path
+SCRIPT_PATH=$(realpath "$0")
 SCRIPT_NAME=$(basename "$SCRIPT_PATH")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 
-# Avoid infinite self-copying by only doing this if not already running in a temp folder
+# Safeguard to avoid infinite self-copying
 if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; then
   TEMP_DIR=$(mktemp -d)
   cp "$SCRIPT_PATH" "$TEMP_DIR/"
@@ -19,40 +14,18 @@ if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; the
   exec "$TEMP_DIR/$SCRIPT_NAME"
 fi
 
-#!/bin/bash
-set -e
+# Show interactive menu
+echo "========== 3DLevED Project Setup =========="
+echo "1. Clean install from repository"
+echo "2. Placeholder Option 2"
+echo "3. Placeholder Option 3"
+echo "4. Remove temporary script files"
+echo "5. Exit"
+echo "==========================================="
+read -rp "Choose an option [1-5]: " OPTION
 
-# Get absolute path to this script
-if command -v realpath &> /dev/null; then
-  SCRIPT_PATH=$(realpath "$0")
-else
-  SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
-fi
-
-SCRIPT_NAME=$(basename "$SCRIPT_PATH")
-SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-
-# Avoid infinite self-copying
-if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; then
-  TEMP_DIR=$(mktemp -d)
-  cp "$SCRIPT_PATH" "$TEMP_DIR/"
-  cd "$TEMP_DIR"
-  exec "$TEMP_DIR/$SCRIPT_NAME"
-fi
-
-# === Prompt user for action ===
-echo "What would you like to do?"
-echo "1) Clean install from repository"
-echo "2) [Placeholder] Update existing build"
-echo "3) [Placeholder] Open project folder"
-echo "4) [Placeholder] Exit"
-
-read -rp "Enter your choice [1-4]: " CHOICE
-
-case "$CHOICE" in
+case "$OPTION" in
   1)
-    echo "[INFO] Starting clean install from repository..."
-
     # Prompt for repo URL
     read -p "Enter the git repository URL (e.g., https://github.com/yourusername/your-repo.git): " REPO_URL
     REPO_URL=${REPO_URL:-"https://github.com/yourusername/your-repo.git"}
@@ -62,16 +35,16 @@ case "$CHOICE" in
 
     # Extract repo name from URL
     REPO_NAME=$(basename -s .git "$REPO_URL")
-
-    # Clone to $HOME/repo_name (clean)
     TARGET_DIR="$HOME/$REPO_NAME"
-    cd "$HOME"
 
+    # Go to home and remove existing repo directory
+    cd "$HOME"
     if [ -d "$TARGET_DIR" ]; then
       echo "[INFO] Removing existing directory $TARGET_DIR"
       rm -rf "$TARGET_DIR"
     fi
 
+    # Clone repo into home directory
     if [[ -n "$BRANCH_NAME" ]]; then
       echo "[INFO] Cloning $REPO_URL (branch: $BRANCH_NAME)..."
       git clone --branch "$BRANCH_NAME" --single-branch "$REPO_URL"
@@ -82,9 +55,11 @@ case "$CHOICE" in
 
     cd "$TARGET_DIR"
 
+    # Create build directory
     mkdir -p build
     cd build
 
+    # Detect platform and build accordingly
     OS_NAME=$(uname)
     echo "[INFO] Detected OS: $OS_NAME"
 
@@ -103,27 +78,82 @@ case "$CHOICE" in
     fi
 
     echo "[INFO] Build complete."
+    echo "[INFO] Done. Project is located at $TARGET_DIR"
+
+    # Clean up temp directory
     echo "[INFO] Cleaning up temporary files..."
     rm -rf "$SCRIPT_DIR"
-    echo "[INFO] Done. Project is located at $TARGET_DIR"
     ;;
 
   2)
-    echo "[TODO] Option 2: Update existing build (placeholder)"
+    echo "[TODO] Option 2 placeholder."
     ;;
 
   3)
-    echo "[TODO] Option 3: Open project folder (placeholder)"
+    echo "[TODO] Option 3 placeholder."
     ;;
 
   4)
-    echo "Exiting..."
+    echo "[INFO] Searching for temporary script files..."
+    FOUND_DIRS=()
+    TEMP_LOCATIONS=("/tmp" "/private/var/folders")
+
+    for LOC in "${TEMP_LOCATIONS[@]}"; do
+      if [ -d "$LOC" ]; then
+        while IFS= read -r -d '' file; do
+          DIR_FOUND=$(dirname "$file")
+          FOUND_DIRS+=("$DIR_FOUND")
+        done < <(find "$LOC" -type f -name "$SCRIPT_NAME" -print0 2>/dev/null)
+      fi
+    done
+
+    if [ ${#FOUND_DIRS[@]} -eq 0 ]; then
+      echo "[INFO] No temporary script files found."
+    else
+      echo "[INFO] Found temporary script files in:"
+      for i in "${!FOUND_DIRS[@]}"; do
+        echo "$((i+1)). ${FOUND_DIRS[$i]}"
+      done
+
+      echo "Choose an action:"
+      echo "[1] Delete All"
+      echo "[2] Choose individually"
+      echo "[3] Cancel"
+      read -rp "> " DELETE_OPTION
+
+      case "$DELETE_OPTION" in
+        1)
+          for DIR in "${FOUND_DIRS[@]}"; do
+            echo "[INFO] Deleting $DIR"
+            rm -rf "$DIR"
+          done
+          echo "[INFO] All temporary script files deleted."
+          ;;
+        2)
+          for DIR in "${FOUND_DIRS[@]}"; do
+            read -rp "Delete $DIR? [y/n]: " CONFIRM
+            if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+              rm -rf "$DIR"
+              echo "[INFO] Deleted $DIR"
+            else
+              echo "[INFO] Skipped $DIR"
+            fi
+          done
+          ;;
+        *)
+          echo "[INFO] Canceled."
+          ;;
+      esac
+    fi
+    ;;
+
+  5)
+    echo "Exiting."
     exit 0
     ;;
 
   *)
-    echo "Invalid choice. Exiting."
+    echo "Invalid option. Exiting."
     exit 1
     ;;
 esac
-
