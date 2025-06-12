@@ -79,7 +79,6 @@ if [[ "$OPTION" == "1" ]]; then
   echo "[INFO] Build complete."
 
   # Make script executable in the new project dir
-  cp "$SCRIPT_PATH" "$TARGET_DIR/"
   chmod +x "$TARGET_DIR/$SCRIPT_NAME"
   echo "[INFO] Copied and made script executable at $TARGET_DIR/$SCRIPT_NAME"
 
