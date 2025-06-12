@@ -1,31 +1,42 @@
 ﻿#!/bin/bash
 set -e
 
-# Resolve absolute path
+# Resolve absolute path and script info
 SCRIPT_PATH=$(realpath "$0")
 SCRIPT_NAME=$(basename "$SCRIPT_PATH")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 
-# Safeguard to avoid infinite self-copying
-if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; then
-  TEMP_DIR=$(mktemp -d)
-  cp "$SCRIPT_PATH" "$TEMP_DIR/"
-  cd "$TEMP_DIR"
-  exec "$TEMP_DIR/$SCRIPT_NAME"
+# Determine if running from a temporary location
+IS_TEMP_SCRIPT=false
+if [[ "$SCRIPT_DIR" == /tmp/* || "$SCRIPT_DIR" == /private/var/folders/* ]]; then
+  IS_TEMP_SCRIPT=true
 fi
 
-# Show interactive menu
-echo "========== 3DLevED Project Setup =========="
-echo "1. Clean install from repository"
-echo "2. Placeholder Option 2"
-echo "3. Placeholder Option 3"
-echo "4. Remove temporary script files"
-echo "5. Exit"
-echo "==========================================="
-read -rp "Choose an option [1-5]: " OPTION
+# Auto-select Option 1 if already in a temp dir
+if $IS_TEMP_SCRIPT; then
+  OPTION=1
+else
+  # Interactive menu
+  echo "========== 3DLevED Project Setup =========="
+  echo "1. Clean install from repository"
+  echo "2. Placeholder Option 2"
+  echo "3. Placeholder Option 3"
+  echo "4. Remove temporary script files"
+  echo "5. Exit"
+  echo "==========================================="
+  read -rp "Choose an option [1-5]: " OPTION
+fi
 
 case "$OPTION" in
   1)
+    # If not running from temp dir, move to temp and exec
+    if ! $IS_TEMP_SCRIPT; then
+      TEMP_DIR=$(mktemp -d)
+      cp "$SCRIPT_PATH" "$TEMP_DIR/"
+      cd "$TEMP_DIR"
+      exec "$TEMP_DIR/$SCRIPT_NAME"
+    fi
+
     # Prompt for repo URL
     read -p "Enter the git repository URL (e.g., https://github.com/yourusername/your-repo.git): " REPO_URL
     REPO_URL=${REPO_URL:-"https://github.com/yourusername/your-repo.git"}
