@@ -12,9 +12,9 @@ if [[ "$SCRIPT_DIR" == /tmp/* || "$SCRIPT_DIR" == /private/var/folders/* ]]; the
 else
   # Show interactive menu
   echo "========== 3DLevED Project Setup =========="
-  echo "1. Clean install from repository"
-  echo "2. Placeholder Option 2"
-  echo "3. Placeholder Option 3"
+  echo "1. Clone from Repository and Compile"
+  echo "2. Recompile from local source code"
+  echo "3. Rebuild after CMake config changes"
   echo "4. Remove temporary script files"
   echo "5. Exit"
   echo "==========================================="
@@ -77,16 +77,96 @@ if [[ "$OPTION" == "1" ]]; then
   fi
 
   echo "[INFO] Build complete."
-  echo "[INFO] Cleaning up temporary files..."
-  rm -rf "$SCRIPT_DIR"
+
+  # Make script executable in the new project dir
+  cp "$SCRIPT_PATH" "$TARGET_DIR/"
+  chmod +x "$TARGET_DIR/$SCRIPT_NAME"
+  echo "[INFO] Copied and made script executable at $TARGET_DIR/$SCRIPT_NAME"
+
+  # Cleanup temp script dir
+  if [[ "$SCRIPT_DIR" == /tmp/* || "$SCRIPT_DIR" == /private/var/folders/* ]]; then
+    echo "[INFO] Cleaning up temporary files in $SCRIPT_DIR"
+    rm -rf "$SCRIPT_DIR"
+  fi
+
   echo "[INFO] Done. Project is located at $TARGET_DIR"
+  exit 0
+
+elif [[ "$OPTION" == "2" ]]; then
+  REPO_NAME="3DLevED"
+  TARGET_DIR="$HOME/$REPO_NAME"
+
+  if [ ! -d "$TARGET_DIR" ]; then
+    echo "[ERROR] Directory $TARGET_DIR not found."
+    echo "Please run Option 1 first to clone the repository."
+    exit 1
+  fi
+
+  echo "[INFO] Recompiling project at $TARGET_DIR"
+  cd "$TARGET_DIR"
+  mkdir -p build
+  cd build
+
+  OS_NAME=$(uname)
+  echo "[INFO] Detected OS: $OS_NAME"
+
+  if [[ "$OS_NAME" == "Darwin" ]]; then
+    echo "[INFO] Building for macOS..."
+    cmake ..
+    make -j4
+  elif [[ "$OS_NAME" == "Linux" ]]; then
+    echo "[INFO] Building for Linux..."
+    cmake ..
+    make -j4
+  else
+    echo "[INFO] Building for Windows (MinGW assumed)..."
+    cmake -G "MinGW Makefiles" ..
+    mingw32-make -j4
+  fi
+
+  echo "[INFO] Recompile complete."
+  exit 0
+
+elif [[ "$OPTION" == "3" ]]; then
+  REPO_NAME="3DLevED"
+  TARGET_DIR="$HOME/$REPO_NAME"
+
+  if [ ! -d "$TARGET_DIR/build" ]; then
+    echo "[ERROR] Build directory not found at $TARGET_DIR/build"
+    echo "Please run Option 1 first to initialize the project."
+    exit 1
+  fi
+
+  echo "[INFO] Rebuilding project at $TARGET_DIR"
+  cd "$TARGET_DIR/build"
+  rm -f CMakeCache.txt
+  rm -rf CMakeFiles
+
+  OS_NAME=$(uname)
+  echo "[INFO] Detected OS: $OS_NAME"
+
+  if [[ "$OS_NAME" == "Darwin" ]]; then
+    echo "[INFO] Rebuilding for macOS..."
+    cmake ..
+    make -j4
+  elif [[ "$OS_NAME" == "Linux" ]]; then
+    echo "[INFO] Rebuilding for Linux..."
+    cmake ..
+    make -j4
+  else
+    echo "[INFO] Rebuilding for Windows (MinGW assumed)..."
+    cmake -G "MinGW Makefiles" ..
+    mingw32-make -j4
+  fi
+
+  echo "[INFO] Rebuild complete."
+  exit 0
 
 elif [[ "$OPTION" == "4" ]]; then
   echo "[INFO] Searching for temporary script files..."
   FOUND_DIRS=()
-
-  # Find all potential temp dirs containing this script
   SEARCH_DIRS=(/tmp /private/var/folders)
+
   for DIR in "${SEARCH_DIRS[@]}"; do
     echo "Searching in: $DIR"
     while IFS= read -r -d '' MATCH; do
@@ -134,40 +214,6 @@ elif [[ "$OPTION" == "4" ]]; then
 
   exit 0
 
-elif [[ "$OPTION" == "2" ]]; then
-  REPO_NAME="3DLevED"
-  TARGET_DIR="$HOME/$REPO_NAME"
-
-  if [ ! -d "$TARGET_DIR" ]; then
-    echo "[ERROR] Directory $TARGET_DIR not found."
-    echo "Please run Option 1 first to clone the repository."
-    exit 1
-  fi
-
-  echo "[INFO] Rebuilding project at $TARGET_DIR"
-  cd "$TARGET_DIR"
-  mkdir -p build
-  cd build
-
-  OS_NAME=$(uname)
-  echo "[INFO] Detected OS: $OS_NAME"
-
-  if [[ "$OS_NAME" == "Darwin" ]]; then
-    echo "[INFO] Building for macOS..."
-    cmake ..
-    make -j4
-  elif [[ "$OS_NAME" == "Linux" ]]; then
-    echo "[INFO] Building for Linux..."
-    cmake ..
-    make -j4
-  else
-    echo "[INFO] Building for Windows (MinGW assumed)..."
-    cmake -G "MinGW Makefiles" ..
-    mingw32-make -j4
-  fi
-
-  echo "[INFO] Rebuild complete."
-  exit 0
 elif [[ "$OPTION" == "5" ]]; then
   echo "Exiting..."
   exit 0
@@ -176,3 +222,4 @@ else
   echo "Invalid selection. Exiting."
   exit 1
 fi
+
