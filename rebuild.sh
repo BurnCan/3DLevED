@@ -134,10 +134,40 @@ elif [[ "$OPTION" == "4" ]]; then
 
   exit 0
 
-elif [[ "$OPTION" == "2" || "$OPTION" == "3" ]]; then
-  echo "[INFO] Placeholder for Option $OPTION."
-  exit 0
+elif [[ "$OPTION" == "2" ]]; then
+  REPO_NAME="3DLevED"
+  TARGET_DIR="$HOME/$REPO_NAME"
 
+  if [ ! -d "$TARGET_DIR" ]; then
+    echo "[ERROR] Directory $TARGET_DIR not found."
+    echo "Please run Option 1 first to clone the repository."
+    exit 1
+  fi
+
+  echo "[INFO] Rebuilding project at $TARGET_DIR"
+  cd "$TARGET_DIR"
+  mkdir -p build
+  cd build
+
+  OS_NAME=$(uname)
+  echo "[INFO] Detected OS: $OS_NAME"
+
+  if [[ "$OS_NAME" == "Darwin" ]]; then
+    echo "[INFO] Building for macOS..."
+    cmake ..
+    make -j4
+  elif [[ "$OS_NAME" == "Linux" ]]; then
+    echo "[INFO] Building for Linux..."
+    cmake ..
+    make -j4
+  else
+    echo "[INFO] Building for Windows (MinGW assumed)..."
+    cmake -G "MinGW Makefiles" ..
+    mingw32-make -j4
+  fi
+
+  echo "[INFO] Rebuild complete."
+  exit 0
 elif [[ "$OPTION" == "5" ]]; then
   echo "Exiting..."
   exit 0
