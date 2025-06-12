@@ -1,20 +1,16 @@
 #!/bin/bash
 set -e
 
-# Detect script path and name
+# Resolve script path and name
 SCRIPT_PATH=$(realpath "$0")
 SCRIPT_NAME=$(basename "$SCRIPT_PATH")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 
-# If running from a temporary directory, skip the menu and run clean install
+# Check if we're in a temp dir — if so, auto-run Option 1
 if [[ "$SCRIPT_DIR" == /tmp/* || "$SCRIPT_DIR" == /private/var/folders/* ]]; then
-  AUTO_CLEAN_INSTALL=true
+  OPTION="1"
 else
-  AUTO_CLEAN_INSTALL=false
-fi
-
-# Display menu only if not in temp directory
-if [[ "$AUTO_CLEAN_INSTALL" == false ]]; then
+  # Show interactive menu
   echo "========== 3DLevED Project Setup =========="
   echo "1. Clean install from repository"
   echo "2. Placeholder Option 2"
@@ -22,15 +18,11 @@ if [[ "$AUTO_CLEAN_INSTALL" == false ]]; then
   echo "4. Remove temporary script files"
   echo "5. Exit"
   echo "==========================================="
-
-  read -p "Choose an option [1-5]: " CHOICE
-else
-  CHOICE=1
+  read -p "Choose an option [1-5]: " OPTION
 fi
 
-# Option 1: Clean install from repository
-if [[ "$CHOICE" == "1" ]]; then
-  # Avoid infinite recursion
+if [[ "$OPTION" == "1" ]]; then
+  # Only copy to temp dir if not already running in one
   if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; then
     TEMP_DIR=$(mktemp -d)
     cp "$SCRIPT_PATH" "$TEMP_DIR/"
@@ -38,28 +30,23 @@ if [[ "$CHOICE" == "1" ]]; then
     exec "$TEMP_DIR/$SCRIPT_NAME"
   fi
 
-  # Prompt for repo URL and auto-trim
+  # Prompt for repo URL and branch
   read -p "Enter the git repository URL (e.g., https://github.com/yourusername/your-repo.git): " REPO_URL
-  REPO_URL=$(echo "$REPO_URL" | xargs)
+  REPO_URL=$(echo "$REPO_URL" | xargs) # Trim whitespace
+  REPO_URL=${REPO_URL:-"https://github.com/yourusername/your-repo.git"}
 
-  # Prompt for branch name (optional) and auto-trim
   read -p "Enter the branch name to clone (leave blank for default): " BRANCH_NAME
   BRANCH_NAME=$(echo "$BRANCH_NAME" | xargs)
 
-  # Extract repo name from URL
   REPO_NAME=$(basename -s .git "$REPO_URL")
-
-  # Target directory one level up from original location
   TARGET_DIR="$HOME/$REPO_NAME"
   cd "$HOME"
 
-  # Remove existing repo if it exists
   if [ -d "$TARGET_DIR" ]; then
     echo "[INFO] Removing existing directory $TARGET_DIR"
     rm -rf "$TARGET_DIR"
   fi
 
-  # Clone repo
   if [[ -n "$BRANCH_NAME" ]]; then
     echo "[INFO] Cloning $REPO_URL (branch: $BRANCH_NAME)..."
     git clone --branch "$BRANCH_NAME" --single-branch "$REPO_URL"
@@ -69,8 +56,6 @@ if [[ "$CHOICE" == "1" ]]; then
   fi
 
   cd "$TARGET_DIR"
-
-  # Build setup
   mkdir -p build
   cd build
 
@@ -94,42 +79,37 @@ if [[ "$CHOICE" == "1" ]]; then
   echo "[INFO] Build complete."
   echo "[INFO] Cleaning up temporary files..."
   rm -rf "$SCRIPT_DIR"
-
   echo "[INFO] Done. Project is located at $TARGET_DIR"
-  exit 0
-fi
 
-# Option 4: Remove temporary script files
-if [[ "$CHOICE" == "4" ]]; then
-  echo "[INFO] Searching for temporary copies of $SCRIPT_NAME..."
+elif [[ "$OPTION" == "4" ]]; then
+  echo "[INFO] Searching for temporary script files..."
   FOUND_DIRS=()
 
-  # Search known temp locations
-  for dir in /tmp /private/var/folders; do
-    if [[ -d "$dir" ]]; then
-      while IFS= read -r -d '' file; do
-        if grep -q "$SCRIPT_NAME" <<< "$file"; then
-          parent_dir=$(dirname "$file")
-          FOUND_DIRS+=("$parent_dir")
-        fi
-      done < <(find "$dir" -type f -name "$SCRIPT_NAME" -print0 2>/dev/null)
-    fi
+  # Find all potential temp dirs containing this script
+  SEARCH_DIRS=(/tmp /private/var/folders)
+  for DIR in "${SEARCH_DIRS[@]}"; do
+    echo "Searching in: $DIR"
+    while IFS= read -r -d '' MATCH; do
+      FOUND_DIRS+=("$(dirname "$MATCH")")
+    done < <(find "$DIR" -type f -name "$SCRIPT_NAME" -print0 2>/dev/null)
   done
 
-  if [[ "${#FOUND_DIRS[@]}" -eq 0 ]]; then
-    echo "No temporary script files found."
+  if [[ ${#FOUND_DIRS[@]} -eq 0 ]]; then
+    echo "No Temporary script files found."
     exit 0
   fi
 
+  echo
   echo "Found the following temporary script directories:"
   for i in "${!FOUND_DIRS[@]}"; do
-    echo "$((i + 1)). ${FOUND_DIRS[$i]}"
+    echo "$((i+1)). ${FOUND_DIRS[$i]}"
   done
 
   echo
   echo "1. Delete all"
   echo "2. Delete individually"
-  read -p "Choose an option [1-2]: " DELETE_OPTION
+  echo "3. Cancel and return to main menu"
+  read -p "Choose an option [1-3]: " DELETE_OPTION
 
   if [[ "$DELETE_OPTION" == "1" ]]; then
     for dir in "${FOUND_DIRS[@]}"; do
@@ -143,23 +123,26 @@ if [[ "$CHOICE" == "4" ]]; then
       if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
         rm -rf "$dir"
         echo "Deleted $dir"
+      else
+        echo "Skipped $dir"
       fi
     done
   else
-    echo "Invalid selection. No files deleted."
+    echo "Cancelled. Returning to main menu."
+    exec "$SCRIPT_PATH"
   fi
 
   exit 0
-fi
 
-# Option 5: Exit
-if [[ "$CHOICE" == "5" ]]; then
-  echo "Goodbye!"
+elif [[ "$OPTION" == "2" || "$OPTION" == "3" ]]; then
+  echo "[INFO] Placeholder for Option $OPTION."
   exit 0
-fi
 
-# Placeholder options
-if [[ "$CHOICE" == "2" || "$CHOICE" == "3" ]]; then
-  echo "This option is a placeholder. Nothing to do yet."
+elif [[ "$OPTION" == "5" ]]; then
+  echo "Exiting..."
   exit 0
+
+else
+  echo "Invalid selection. Exiting."
+  exit 1
 fi
