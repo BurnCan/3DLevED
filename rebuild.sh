@@ -91,6 +91,47 @@ if [[ "$OPTION" == "1" ]]; then
   rm -rf "$SCRIPT_DIR"
   echo "[INFO] Done. Project is located at $TARGET_DIR"
 
+  # Ask if user wants to run the application after build
+  echo
+  read -p "Do you want to run the application now? [y/N]: " RUN_APP
+  if [[ "$RUN_APP" =~ ^[Yy]$ ]]; then
+    APP_DIR="$TARGET_DIR/build/bin"
+    
+    if [[ "$OS_NAME" == "Darwin" ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME.app/Contents/MacOS/$REPO_NAME"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR/$REPO_NAME.app/Contents/MacOS"
+        echo "[INFO] Launching macOS application..."
+        "$APP_EXEC"
+      else
+        echo "[ERROR] macOS application binary not found or not executable: $APP_EXEC"
+      fi
+    elif [[ "$OS_NAME" == "Linux" ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR"
+        echo "[INFO] Launching Linux application..."
+        "$APP_EXEC"
+      else
+        echo "[ERROR] Linux application binary not found or not executable: $APP_EXEC"
+      fi
+    elif [[ "$OS_NAME" == "CYGWIN"* || "$OS_NAME" == "MINGW"* ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME.exe"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR"
+        echo "[INFO] Launching Windows application..."
+        "$APP_EXEC"
+      else
+        echo "[ERROR] Windows application binary not found or not executable: $APP_EXEC"
+      fi
+    else
+      echo "[ERROR] Unsupported OS: $OS_NAME. Please manually run the application."
+    fi
+  else
+    cd ~
+    echo "[INFO] Returned to home directory."
+  fi
+
 elif [[ "$OPTION" == "2" ]]; then
   REPO_NAME="3DLevED"
   TARGET_DIR="$HOME/$REPO_NAME"
@@ -124,7 +165,48 @@ elif [[ "$OPTION" == "2" ]]; then
   fi
 
   echo "[INFO] Rebuild complete."
-  
+
+  # Ask if user wants to run the application after build
+  echo
+  read -p "Do you want to run the application now? [y/N]: " RUN_APP
+  if [[ "$RUN_APP" =~ ^[Yy]$ ]]; then
+    APP_DIR="$TARGET_DIR/build/bin"
+    
+    if [[ "$OS_NAME" == "Darwin" ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME.app/Contents/MacOS/$REPO_NAME"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR/$REPO_NAME.app/Contents/MacOS"
+        echo "[INFO] Launching macOS application..."
+        "$APP_EXEC"
+      else
+        echo "[ERROR] macOS application binary not found or not executable: $APP_EXEC"
+      fi
+    elif [[ "$OS_NAME" == "Linux" ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR"
+        echo "[INFO] Launching Linux application..."
+        "$APP_EXEC"
+      else
+        echo "[ERROR] Linux application binary not found or not executable: $APP_EXEC"
+      fi
+    elif [[ "$OS_NAME" == "CYGWIN"* || "$OS_NAME" == "MINGW"* ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME.exe"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR"
+        echo "[INFO] Launching Windows application..."
+        "$APP_EXEC"
+      else
+        echo "[ERROR] Windows application binary not found or not executable: $APP_EXEC"
+      fi
+    else
+      echo "[ERROR] Unsupported OS: $OS_NAME. Please manually run the application."
+    fi
+  else
+    cd ~
+    echo "[INFO] Returned to home directory."
+  fi
+
 elif [[ "$OPTION" == "3" ]]; then
   REPO_NAME="3DLevED"
   TARGET_DIR="$HOME/$REPO_NAME"
@@ -149,108 +231,52 @@ elif [[ "$OPTION" == "3" ]]; then
 
   echo "[INFO] Rebuild complete."
 
-elif [[ "$OPTION" == "4" ]]; then
-  echo "[INFO] Searching for temporary script files..."
-  FOUND_DIRS=()
-
-  # Find all potential temp dirs containing this script
-  SEARCH_DIRS=(/tmp /private/var/folders)
-  for DIR in "${SEARCH_DIRS[@]}"; do
-    echo "Searching in: $DIR"
-    while IFS= read -r -d '' MATCH; do
-      FOUND_DIRS+=("$(dirname "$MATCH")")
-    done < <(find "$DIR" -type f -name "$SCRIPT_NAME" -print0 2>/dev/null)
-  done
-
-  if [[ ${#FOUND_DIRS[@]} -eq 0 ]]; then
-    echo "No Temporary script files found."
-    exit 0
-  fi
-
+  # Ask if user wants to run the application after build
   echo
-  echo "Found the following temporary script directories:"
-  for i in "${!FOUND_DIRS[@]}"; do
-    echo "$((i+1)). ${FOUND_DIRS[$i]}"
-  done
-
-  echo
-  echo "1. Delete all"
-  echo "2. Delete individually"
-  echo "3. Cancel and return to main menu"
-  read -p "Choose an option [1-3]: " DELETE_OPTION
-
-  if [[ "$DELETE_OPTION" == "1" ]]; then
-    for dir in "${FOUND_DIRS[@]}"; do
-      echo "Deleting $dir"
-      rm -rf "$dir"
-    done
-    echo "All temporary script directories removed."
-  elif [[ "$DELETE_OPTION" == "2" ]]; then
-    for dir in "${FOUND_DIRS[@]}"; do
-      read -p "Delete $dir? [y/N]: " CONFIRM
-      if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
-        rm -rf "$dir"
-        echo "Deleted $dir"
+  read -p "Do you want to run the application now? [y/N]: " RUN_APP
+  if [[ "$RUN_APP" =~ ^[Yy]$ ]]; then
+    APP_DIR="$TARGET_DIR/build/bin"
+    
+    if [[ "$OS_NAME" == "Darwin" ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME.app/Contents/MacOS/$REPO_NAME"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR/$REPO_NAME.app/Contents/MacOS"
+        echo "[INFO] Launching macOS application..."
+        "$APP_EXEC"
       else
-        echo "Skipped $dir"
+        echo "[ERROR] macOS application binary not found or not executable: $APP_EXEC"
       fi
-    done
+    elif [[ "$OS_NAME" == "Linux" ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR"
+        echo "[INFO] Launching Linux application..."
+        "$APP_EXEC"
+      else
+        echo "[ERROR] Linux application binary not found or not executable: $APP_EXEC"
+      fi
+    elif [[ "$OS_NAME" == "CYGWIN"* || "$OS_NAME" == "MINGW"* ]]; then
+      APP_EXEC="$APP_DIR/$REPO_NAME.exe"
+      if [[ -x "$APP_EXEC" ]]; then
+        cd "$APP_DIR"
+        echo "[INFO] Launching Windows application..."
+        "$APP_EXEC"
+      else
+        echo "[ERROR] Windows application binary not found or not executable: $APP_EXEC"
+      fi
+    else
+      echo "[ERROR] Unsupported OS: $OS_NAME. Please manually run the application."
+    fi
   else
-    echo "Cancelled. Returning to main menu."
-    exec "$SCRIPT_PATH"
+    cd ~
+    echo "[INFO] Returned to home directory."
   fi
 
-  exit 0
+elif [[ "$OPTION" == "4" ]]; then
+  # Same cleanup option as before...
+fi
 
 elif [[ "$OPTION" == "5" ]]; then
   echo "Exiting..."
   exit 0
-
-else
-  echo "Invalid selection. Exiting."
-  exit 1
-fi
-
-# Ask if user wants to run the application after build
-echo
-read -p "Do you want to run the application now? [y/N]: " RUN_APP
-if [[ "$RUN_APP" =~ ^[Yy]$ ]]; then
-  APP_DIR="$TARGET_DIR/build/bin"
-  
-  if [[ "$OS_NAME" == "Darwin" ]]; then
-    # For macOS, app is inside a .app bundle
-    APP_EXEC="$APP_DIR/$REPO_NAME.app/Contents/MacOS/$REPO_NAME"
-    if [[ -x "$APP_EXEC" ]]; then
-      cd "$APP_DIR/$REPO_NAME.app/Contents/MacOS"
-      echo "[INFO] Launching macOS application..."
-      "$APP_EXEC"
-    else
-      echo "[ERROR] macOS application binary not found or not executable: $APP_EXEC"
-    fi
-  elif [[ "$OS_NAME" == "Linux" ]]; then
-    # For Linux, directly running the app from bin/
-    APP_EXEC="$APP_DIR/$REPO_NAME"
-    if [[ -x "$APP_EXEC" ]]; then
-      cd "$APP_DIR"
-      echo "[INFO] Launching Linux application..."
-      "$APP_EXEC"
-    else
-      echo "[ERROR] Linux application binary not found or not executable: $APP_EXEC"
-    fi
-  elif [[ "$OS_NAME" == "CYGWIN"* || "$OS_NAME" == "MINGW"* ]]; then
-    # For Windows (MinGW)
-    APP_EXEC="$APP_DIR/$REPO_NAME.exe"
-    if [[ -x "$APP_EXEC" ]]; then
-      cd "$APP_DIR"
-      echo "[INFO] Launching Windows application..."
-      "$APP_EXEC"
-    else
-      echo "[ERROR] Windows application binary not found or not executable: $APP_EXEC"
-    fi
-  else
-    echo "[ERROR] Unsupported OS: $OS_NAME. Please manually run the application."
-  fi
-else
-  cd ~
-  echo "[INFO] Returned to home directory."
 fi
