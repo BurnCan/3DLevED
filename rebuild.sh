@@ -83,10 +83,11 @@ if [[ "$OPTION" == "1" ]]; then
   echo "[INFO] Made script executable at $TARGET_DIR/$SCRIPT_NAME"
 
   # Prompt to run app
-  RUN_APP=""
+  echo "[DEBUG] Prompting to run the application..."
   echo
-  read -p "Do you want to run the application now? [y/N]: " RUN_APP
-  if [[ "$RUN_APP" =~ ^[Yy]$ ]]; then
+  echo -n "Do you want to run the application now? [y/N]: "
+  read RUN_APP
+  if [[ "$RUN_APP" == "y" || "$RUN_APP" == "Y" ]]; then
     APP_DIR="$TARGET_DIR/build/bin"
     if [[ "$OS_NAME" == "Darwin" ]]; then
       APP_EXEC="$APP_DIR/$REPO_NAME.app/Contents/MacOS/$REPO_NAME"
@@ -136,7 +137,10 @@ elif [[ "$OPTION" == "2" || "$OPTION" == "3" ]]; then
   fi
 
   echo "[INFO] Rebuilding project at $TARGET_DIR"
+  
+  # Change directory to the target and clean if rebuilding
   cd "$TARGET_DIR"
+  
   mkdir -p build && cd build
 
   if [[ "$OPTION" == "3" ]]; then
@@ -162,9 +166,14 @@ elif [[ "$OPTION" == "2" || "$OPTION" == "3" ]]; then
     mingw32-make -j4
   fi
 
+  echo "[INFO] Rebuild complete."
+  
+  # Prompt to run app
+  echo "[DEBUG] Prompting to run the application..."
   echo
-  read -p "Do you want to run the application now? [y/N]: " RUN_APP
-  if [[ "$RUN_APP" =~ ^[Yy]$ ]]; then
+  echo -n "Do you want to run the application now? [y/N]: "
+  read RUN_APP
+  if [[ "$RUN_APP" == "y" || "$RUN_APP" == "Y" ]]; then
     APP_DIR="$TARGET_DIR/build/bin"
     if [[ "$OS_NAME" == "Darwin" ]]; then
       APP_EXEC="$APP_DIR/$REPO_NAME.app/Contents/MacOS/$REPO_NAME"
