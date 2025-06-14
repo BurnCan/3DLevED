@@ -114,8 +114,9 @@ This launches an interactive menu that helps you build, rebuild, recompile, or r
 
 ### 🛠️ Manual Setup (Alternative)
 If you prefer not to use the setup script, follow the appropriate manual instructions below:
-
+---
 🔄 Clone and build the Project
+---
 ```bash
 git clone https://github.com/BurnCan/3DLevED
 cd 3DLevED
@@ -157,7 +158,11 @@ Run the application:
 ```bash
 ./build/bin/3DLevED.app/Contents/MacOS/3DLevED
 ```
+
+
+---
 🔄  Recompile (After Code or Shader Edits)
+---
 ```bash
 cd build
 ```
@@ -221,7 +226,9 @@ Run the application:
 ./build/bin/3DLevED.app/Contents/MacOS/3DLevED
 ```
  
-
+---
+Uninstall instructions
+---
 
 🧹Remove the cloned project directory:
 
