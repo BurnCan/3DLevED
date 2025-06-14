@@ -5,7 +5,7 @@ This guide walks you through setting up your development environment and compili
 
 ---
 
-##🧰 Prerequisites
+## 🧰 Prerequisites
 Before building or running 3DLevED, make sure your system has the required tools installed.
 
 ✅ Required on All Platforms
