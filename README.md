@@ -19,7 +19,7 @@ GCC, Clang, or MSYS2/MinGW depending on OS
 
 OpenGL-Compatible GPU
 
-
+---
 ## OS Specific installation instructions for prerequisite tools:
 ---
 ## 🪟 Windows (MSYS2 + MinGW64)
