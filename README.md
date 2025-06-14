@@ -112,8 +112,10 @@ chmod +x rebuild.sh && ./rebuild.sh
 ```
 This launches an interactive menu that helps you build, rebuild, recompile, or run the application.
 
+---
 ### 🛠️ Manual Setup (Alternative)
 If you prefer not to use the setup script, follow the appropriate manual instructions below:
+---
 ---
 🔄 Clone and build the Project
 ---
