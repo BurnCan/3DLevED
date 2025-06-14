@@ -5,15 +5,23 @@ This guide walks you through setting up your development environment and compili
 
 ---
 
-## 🧰 Prerequisites
+##🧰 Prerequisites
+Before building or running 3DLevED, make sure your system has the required tools installed.
 
-- Git
-- CMake (3.14+)
-- C++ Compiler (GCC, Clang, or MSVC)
-- OpenGL-compatible GPU
+✅ Required on All Platforms
+Git – For cloning the repository
 
+CMake (3.14 or higher) – For project configuration
+
+C++ Compiler
+
+GCC, Clang, or MSYS2/MinGW depending on OS
+
+OpenGL-Compatible GPU
 ---
 
+## OS Specific installation instructions for prerequisite tools:
+---
 ## 🪟 Windows (MSYS2 + MinGW64)
 
 ### 1. Download and install the appropriate 64-bit version from the [MSYS2 website](https://www.msys2.org). 
@@ -23,42 +31,23 @@ This guide walks you through setting up your development environment and compili
 
 > Not `MSYS`, `UCRT`, or `CLANG`.
 
-### 3. Update MSYS2
-
+### 3. Update the package database and core system
 ```bash
 pacman -Syu
 # Restart terminal if prompted
 pacman -Su
 ```
-
-### 4. Install tools
-
+### 4. Install build tools
 ```bash
 pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-make git
 ```
-
-### 5. Clone the repository
-
+📦 Optional: Install libraries manually 
+Example:
 ```bash
-git clone https://github.com/BurnCan/3DLevED
-cd 3DLevED
+pacman -S mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-glm mingw-w64-x86_64-imgui
 ```
 
-### 6. Build
-
-```bash
-mkdir build && cd build
-cmake -G "MinGW Makefiles" ..
-mingw32-make -j4
-```
-
-### 7. Run
-
-```bash
-cd bin
-./OpenGLApp.exe
-```
-
+If the libraries you want to install are included in `FetchContent` in CMake, this is **not required**.
 ---
 
 ## 🍏 macOS
@@ -68,13 +57,19 @@ cd bin
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
+💡 Important: Follow the post-install instructions to add Homebrew to your shell config.
+
 Post-installation steps
 When you install Homebrew, it prints some directions for updating your shell’s config. If you don’t follow those directions, Homebrew will not work.
 
-You need to update your shell’s config file (which file exactly depends on your shell, for example ~/.bashrc or ~/.zshrc) to include this:
+You need to update your shell’s config file (which file exactly depends on your shell, for example ~/.bashrc or ~/.zshrc) to include this
+Example:
+
 ```bash
-eval "$(<Homebrew prefix path>/bin/brew shellenv)"
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
 ```
+
 Replace <Homebrew prefix path> with the directory where Homebrew is installed on your system. You can find Homebrew’s default install location in [this FAQ entry.](https://docs.brew.sh/FAQ#why-should-i-install-homebrew-in-the-default-location) 
 
 
@@ -84,23 +79,6 @@ Replace <Homebrew prefix path> with the directory where Homebrew is installed on
 brew install cmake git
 ```
 
-### 3. Build
-
-```bash
-git clone https://github.com/BurnCan/3DLevED
-cd 3DLevED
-mkdir build && cd build
-cmake ..
-make -j4
-```
-
-### 4. Run
-
-```bash
-cd bin/3DLevED.app/Contents/MacOS
-./3DLevED
-
-```
 
 ---
 
@@ -113,50 +91,11 @@ sudo apt update
 sudo apt install build-essential cmake git libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
 ```
 
-### 2. Build
-
-```bash
-git clone https://github.com/BurnCan/3DLevED
-cd 3DLevED
-mkdir build && cd build
-cmake ..
-make -j4
-```
-
-### 3. Run
-
-```bash
-cd bin
-./YourAppExecutableName
-```
 
 ---
 
-## 📦 Optional: Install libraries manually (Windows only)
 
-```bash
-pacman -S mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-glm mingw-w64-x86_64-imgui
-```
 
-If you're using `FetchContent` in CMake, these are **not required**.
-
----
-
-## 📁 Project Structure Example (windows)
-
-```
-OpenGLProjectTemplate/
-├── shaders/
-├── src/
-├── CMakeLists.txt
-├── README.md
-└── build/
-    └── bin/
-	├── shaders/
-        └── OpenGLApp.exe
-```
-
----
 
 ##🛠️ Setting Up and recompiling/rebuilding 3DLevED
 
@@ -169,7 +108,7 @@ cd 3DLevED
 ```
 🚀 Step 2: Make the Script Executable and Run It
 ```bash
-chmod +x setup.sh && ./setup.sh
+chmod +x rebuild.sh && ./rebuild.sh
 ```
 This launches an interactive menu that helps you build, rebuild, recompile, or run the application.
 
@@ -313,6 +252,22 @@ This cleans up any leftover setup script directories.
 
 
 ---
+
+## 📁 Project Structure Example (windows)
+
+```
+3DLevED/
+├── shaders/
+├── src/
+├── CMakeLists.txt
+├── README.md
+├── rebuild.sh
+└── build/
+    └── bin/
+	├── shaders/
+        └── 3DLevED.exe
+```
+
 
 ## ⚠️ Note on Working with Shaders:
 The shaders/ directory is automatically copied into the build/bin/ directory by CMake. This ensures that the built application has access to the required shader files.
