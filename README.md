@@ -48,8 +48,8 @@ pacman -S mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-glm mingw
 ```
 
 If the libraries you want to install are included in `FetchContent` in CMake, this is **not required**.
----
 
+---
 ## 🍏 macOS
 
 ### 1. Install Homebrew using the install script from the [Homebrew website](https://brew.sh)
