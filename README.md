@@ -114,8 +114,9 @@ This launches an interactive menu that helps you build, rebuild, recompile, or r
 
 ---
 ### 🛠️ Manual Setup (Alternative)
-If you prefer not to use the setup script, follow the appropriate manual instructions below:
 ---
+If you prefer not to use the setup script, follow the appropriate manual instructions below:
+
 ---
 🔄 Clone and build the Project
 ---
