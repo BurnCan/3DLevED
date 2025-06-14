@@ -162,7 +162,7 @@ Run the application:
 ./build/bin/3DLevED.app/Contents/MacOS/3DLevED
 ```
 
-
+---
 ---
 🔄  Recompile (After Code or Shader Edits)
 ---
