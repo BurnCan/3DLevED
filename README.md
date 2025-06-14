@@ -97,8 +97,8 @@ make -j4
 ### 4. Run
 
 ```bash
-cd bin/OpenGLApp.app/Contents/MacOS
-./OpenGLApp
+cd bin/3DLevED.app/Contents/MacOS
+./3DLevED
 
 ```
 
@@ -158,81 +158,159 @@ OpenGLProjectTemplate/
 
 ---
 
-## 🛠️ Rebuilding the Project
-Depending on your situation, choose one of the following options to rebuild the project.
+##🛠️ Setting Up and recompiling/rebuilding 3DLevED
 
-✅ Option 1: Rebuild Normally (after code or shader edits)
+###⚠️We recommend using the provided setup script to manage cloning, building, and running the project.
+
+📥 Step 1: Clone the Repository
 ```bash
-
-cd build
+git clone https://github.com/BurnCan/3DLevED
+cd 3DLevED
 ```
-OS-specific build command below
-🪟Windows (MSYS2):
-
+🚀 Step 2: Make the Script Executable and Run It
 ```bash
-mingw32-make -j4
+chmod +x setup.sh && ./setup.sh
 ```
-🍏🐧macOS / Linux:
+This launches an interactive menu that helps you build, rebuild, recompile, or run the application.
 
+###🛠️ Manual Setup (Alternative)
+If you prefer not to use the setup script, follow the appropriate manual instructions below:
+
+🔄 Clone and build the Project
 ```bash
-
-make -j4
-```
--j4 runs 4 compilation jobs in parallel. Adjust the number to match your CPU.
-
-🔄 Option 2: Rebuild After CMake Configuration Changes
-```bash
-cd build
-# Remove cached build files
-rm CMakeCache.txt
-rm -rf CMakeFiles
-```
-OS-specific cmake and build commands below
-🪟Windows (MSYS2):
-
-```bash
-
-cmake -G "MinGW Makefiles" ..
-mingw32-make -j4
-```
-🍏🐧macOS / Linux:
-
-```bash
-
-cmake ..
-make -j4
-```
-🧹 Option 3: Full Clean — Delete and Reclone the Project
-```bash
-cd ..
-rm -rf 3DLevED
 git clone https://github.com/BurnCan/3DLevED
 cd 3DLevED
 mkdir build && cd build
 ```
-OS-specific cmake and build commands below
-🪟Windows (MSYS2):
+
+💡 To clone a specific branch (e.g., development):
+
+```bash
+git clone --branch development --single-branch https://github.com/BurnCan/3DLevED
+```
+
+
+
+OS-specific CMake and build commands:
+
+🪟 Windows (MSYS2):
+
+```bash
+
+cmake -G "MinGW Makefiles" ..
+mingw32-make -j4
+```
+🍏🐧 macOS / Linux:
+
+```bash
+cmake ..
+make -j4
+```
+Run the application:
+
+🪟/🐧 Windows / Linux:
+
+```bash
+./build/bin/3DLevED
+```
+🍏macOS:
+
+```bash
+./build/bin/3DLevED.app/Contents/MacOS/3DLevED
+```
+🔄  Recompile (After Code or Shader Edits)
+```bash
+cd build
+```
+OS-specific build commands:
+
+🪟 Windows (MSYS2):
 
 ```bash
 cmake -G "MinGW Makefiles" ..
 mingw32-make -j4
 ```
-🍏🐧macOS / Linux:
+🍏🐧 macOS / Linux:
 
 ```bash
-
 cmake ..
 make -j4
 ```
-This deletes the entire project and gets a fresh copy from GitHub.
+Run the application:
 
-🗂️ Cloning a Specific Branch (Optional)
-To clone a specific branch (e.g., development) instead of the default:
+🪟/🐧Windows / Linux:
 
 ```bash
-git clone --branch development --single-branch https://github.com/BurnCan/3DLevED
+./build/bin/3DLevED
 ```
-This clones only the specified branch, reducing download size and avoiding unrelated history.
+
+🍏macOS:
+
+```bash
+./build/bin/3DLevED.app/Contents/MacOS/3DLevED
+```
+🔄 Rebuild After CMake Configuration Changes
+```bash
+cd build
+rm CMakeCache.txt
+rm -rf CMakeFiles
+```
+OS-specific CMake and build commands:
+
+🪟 Windows (MSYS2):
+
+```bash
+cmake -G "MinGW Makefiles" ..
+mingw32-make -j4
+```
+🍏🐧 macOS / Linux:
+
+```bash
+cmake ..
+make -j4
+```
+Run the application:
+
+🪟/🐧Windows / Linux:
+
+```bash
+./build/bin/3DLevED
+```
+🍏macOS:
+
+```bash
+./build/bin/3DLevED.app/Contents/MacOS/3DLevED
+```
+ 
+
+
+🧹Remove the cloned project directory:
+
+Assuming you cloned into the home directory
+```bash
+cd ~
+```
+then
+```bash
+rm -rf 3DLevED
+```
+
+
+🧹Remove temporary copies of script:
+
+⚠️This does not yet work to remove temporary script files, any undeleted temporary script files (rebuild.sh) are in a directory within
+/tmp for windows and linux or /private/var/folders however finding this directory manually can be quite difficult as the script does not yet copy itself to a temporary directory named 3DLevED but a directory named similar to /tmp/tmp.9N7hV6vCbu
+Under certain circumstances these files and directories are not automatically deleted  after the script is run , to be sure you have deleted all temporary script files run the script and select option 4 which will scan /tmp and /private/var/folders for a file named rebuild.sh and prompt you for deletion. this will be fixed in a future update.
+
+```bash
+find /tmp -type d -name "3DLevED*" -exec rm -rf {} +
+find /private/var/folders -type d -name "3DLevED*" -exec rm -rf {} +
+```
+This cleans up any leftover setup script directories.
+
+
+
+
 
 ---
 
@@ -245,7 +323,7 @@ To apply your shader changes:
 
 Make edits in shaders/ (in the project root).
 
-Rebuild the project using make -j4 (or mingw32-make -j4 for windows).
+Recompile the project as described above.
 
 This will ensure that your changes are properly copied into the app bundle and used at runtime.
 
