@@ -97,9 +97,9 @@ sudo apt install build-essential cmake git libgl1-mesa-dev libx11-dev libxi-dev 
 
 
 
-##🛠️ Setting Up and recompiling/rebuilding 3DLevED
+## 🛠️ Setting Up and recompiling/rebuilding 3DLevED
 
-###⚠️We recommend using the provided setup script to manage cloning, building, and running the project.
+### ⚠️We recommend using the provided setup script to manage cloning, building, and running the project.
 
 📥 Step 1: Clone the Repository
 ```bash
@@ -112,7 +112,7 @@ chmod +x rebuild.sh && ./rebuild.sh
 ```
 This launches an interactive menu that helps you build, rebuild, recompile, or run the application.
 
-###🛠️ Manual Setup (Alternative)
+### 🛠️ Manual Setup (Alternative)
 If you prefer not to use the setup script, follow the appropriate manual instructions below:
 
 🔄 Clone and build the Project
