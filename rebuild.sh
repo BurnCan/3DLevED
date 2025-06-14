@@ -82,6 +82,10 @@ if [[ "$OPTION" == "1" ]]; then
   chmod +x "$TARGET_DIR/$SCRIPT_NAME"
   echo "[INFO] Made script executable at $TARGET_DIR/$SCRIPT_NAME"
 
+  # Ensure the updated script is used
+  cp "$TARGET_DIR/$SCRIPT_NAME" "$SCRIPT_DIR"
+  echo "[INFO] Updated script copied to $SCRIPT_DIR"
+
   # Prompt to run app
   echo "[DEBUG] Prompting to run the application..."
   echo
