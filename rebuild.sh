@@ -212,24 +212,29 @@ elif [[ "$OPTION" == "2" || "$OPTION" == "3" ]]; then
 
 elif [[ "$OPTION" == "4" ]]; then
   echo "[INFO] Searching for temporary script files..."
-  FOUND_DIRS=()
-  SEARCH_DIRS=(/tmp /private/var/folders)
+  FOUND_FILES=()
+  SEARCH_DIRS=(/tmp /private/var/folders /tmp/3DLevED)
+  SCRIPT_NAMES=("rebuild.sh" "build.sh")
+
   for DIR in "${SEARCH_DIRS[@]}"; do
     echo "Searching in: $DIR"
-    while IFS= read -r -d '' MATCH; do
-      FOUND_DIRS+=("$(dirname "$MATCH")")
-    done < <(find "$DIR" -type f -name "$SCRIPT_NAME" -print0 2>/dev/null)
+    for SCRIPT_NAME in "${SCRIPT_NAMES[@]}"; do
+      while IFS= read -r -d '' MATCH; do
+        FOUND_FILES+=("$MATCH")
+      done < <(find "$DIR" -type f -name "$SCRIPT_NAME" -print0 2>/dev/null)
+    done
   done
 
-  if [[ ${#FOUND_DIRS[@]} -eq 0 ]]; then
-    echo "No Temporary script files found."
+  if [[ ${#FOUND_FILES[@]} -eq 0 ]]; then
+    echo "[INFO] No temporary script files found."
     exit 0
   fi
 
   echo
-  echo "Found the following temporary script directories:"
-  for i in "${!FOUND_DIRS[@]}"; do
-    echo "$((i+1)). ${FOUND_DIRS[$i]}"
+  echo "Found the following temporary script files:"
+  for i in "${!FOUND_FILES[@]}"; do
+    echo "$((i+1)). File: ${FOUND_FILES[$i]}"
+    echo "    Dir:  $(dirname "${FOUND_FILES[$i]}")"
   done
 
   echo
@@ -239,19 +244,20 @@ elif [[ "$OPTION" == "4" ]]; then
   read -p "Choose an option [1-3]: " DELETE_OPTION
 
   if [[ "$DELETE_OPTION" == "1" ]]; then
-    for dir in "${FOUND_DIRS[@]}"; do
-      echo "Deleting $dir"
-      rm -rf "$dir"
+    for FILE in "${FOUND_FILES[@]}"; do
+      echo "Deleting $(dirname "$FILE")"
+      rm -rf "$(dirname "$FILE")"
     done
-    echo "All temporary script directories removed."
+    echo "[INFO] All temporary script directories removed."
   elif [[ "$DELETE_OPTION" == "2" ]]; then
-    for dir in "${FOUND_DIRS[@]}"; do
-      read -p "Delete $dir? [y/N]: " CONFIRM
+    for FILE in "${FOUND_FILES[@]}"; do
+      DIR_TO_DELETE="$(dirname "$FILE")"
+      read -p "Delete $DIR_TO_DELETE? [y/N]: " CONFIRM
       if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
-        rm -rf "$dir"
-        echo "Deleted $dir"
+        rm -rf "$DIR_TO_DELETE"
+        echo "Deleted $DIR_TO_DELETE"
       else
-        echo "Skipped $dir"
+        echo "Skipped $DIR_TO_DELETE"
       fi
     done
   else
