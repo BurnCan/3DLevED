@@ -28,11 +28,19 @@ fi
 if [[ "$OPTION" == "1" ]]; then
   # Only copy to temp dir if not already running in one
   if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; then
-    TEMP_DIR=$(mktemp -d)
-    cp "$SCRIPT_PATH" "$TEMP_DIR/"
-    cd "$TEMP_DIR"
-    exec "$TEMP_DIR/$SCRIPT_NAME"
+  TEMP_DIR="/tmp/3DLevED"
+
+  # Clean up previous temp dir to avoid conflicts
+  if [[ -d "$TEMP_DIR" ]]; then
+    echo "[INFO] Cleaning up existing temp dir: $TEMP_DIR"
+    rm -rf "$TEMP_DIR"
   fi
+
+  mkdir -p "$TEMP_DIR"
+  cp "$SCRIPT_PATH" "$TEMP_DIR/"
+  cd "$TEMP_DIR"
+  exec "$TEMP_DIR/$SCRIPT_NAME"
+fi
 
   read -p "Enter the git repository URL (e.g., https://github.com/yourusername/your-repo.git): " REPO_URL
   REPO_URL=$(echo "$REPO_URL" | xargs)
