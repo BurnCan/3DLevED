@@ -16,15 +16,17 @@ if [[ "$SCRIPT_DIR" == /tmp/* || "$SCRIPT_DIR" == /private/var/folders/* ]]; the
 else
   # Show interactive menu
   echo "========== 3DLevED Project Setup =========="
-  echo "1. Clone from Repository and Compile"
-  echo "2. Recompile project"
-  echo "3. Rebuild After CMake Configuration Changes"
-  echo "4. Remove temporary script files"
-  echo "5. Exit"
-  echo "==========================================="
-  read -p "Choose an option [1-5]: " OPTION
+echo "1. Clone from Repository and Compile"
+echo "2. Recompile project"
+echo "3. Rebuild After CMake Configuration Changes"
+echo "4. Remove temporary script files"
+echo "5. Run the application"
+echo "6. Exit"
+echo "==========================================="
+read -p "Choose an option [1-6]: " OPTION
 fi
 
+# Option 1 Clone and build
 if [[ "$OPTION" == "1" ]]; then
   # Only copy to temp dir if not already running in one
   TEMP_CHECK=$(realpath "$SCRIPT_DIR")
@@ -142,7 +144,7 @@ fi
     echo "[INFO] Cleaning up temporary files in $SCRIPT_DIR"
     rm -rf "$SCRIPT_DIR"
   fi
-
+# Options 2 and 3 recompile/rebuild&recompile
 elif [[ "$OPTION" == "2" || "$OPTION" == "3" ]]; then
   if [ ! -d "$TARGET_DIR" ]; then
     echo "[ERROR] Directory $TARGET_DIR not found. Run Option 1 first."
@@ -222,7 +224,7 @@ elif [[ "$OPTION" == "2" || "$OPTION" == "3" ]]; then
     cd ~
     echo "[INFO] Returned to home directory."
   fi
-
+# Option 4 clean up temporary script files
 elif [[ "$OPTION" == "4" ]]; then
   echo "[INFO] Searching for temporary script files..."
   FOUND_FILES=()
@@ -278,7 +280,50 @@ elif [[ "$OPTION" == "4" ]]; then
     exec "$SCRIPT_PATH"
   fi
 
+# Option 5 run the program
 elif [[ "$OPTION" == "5" ]]; then
+  if [ ! -d "$TARGET_DIR/build/bin" ]; then
+    echo "[ERROR] Build output directory not found: $TARGET_DIR/build/bin"
+    echo "[HINT] You may need to compile first using Option 1, 2, or 3."
+    exit 1
+  fi
+
+  OS_NAME=$(uname)
+  APP_DIR="$TARGET_DIR/build/bin"
+  APP_EXEC=""
+
+  if [[ "$OS_NAME" == "Darwin" ]]; then
+    APP_EXEC="$APP_DIR/$REPO_NAME.app/Contents/MacOS/$REPO_NAME"
+    if [[ -x "$APP_EXEC" ]]; then
+      cd "$APP_DIR/$REPO_NAME.app/Contents/MacOS"
+      echo "[INFO] Launching macOS application..."
+      "$APP_EXEC"
+    else
+      echo "[ERROR] macOS app binary not found or not executable: $APP_EXEC"
+    fi
+  elif [[ "$OS_NAME" == "Linux" ]]; then
+    APP_EXEC="$APP_DIR/$REPO_NAME"
+    if [[ -x "$APP_EXEC" ]]; then
+      cd "$APP_DIR"
+      echo "[INFO] Launching Linux application..."
+      "$APP_EXEC"
+    else
+      echo "[ERROR] Linux app binary not found or not executable: $APP_EXEC"
+    fi
+  elif [[ "$OS_NAME" == CYGWIN* || "$OS_NAME" == MINGW* ]]; then
+    APP_EXEC="$APP_DIR/$REPO_NAME.exe"
+    if [[ -x "$APP_EXEC" ]]; then
+      cd "$APP_DIR"
+      echo "[INFO] Launching Windows application..."
+      "$APP_EXEC"
+    else
+      echo "[ERROR] Windows app binary not found or not executable: $APP_EXEC"
+    fi
+  else
+    echo "[ERROR] Unsupported OS: $OS_NAME"
+  fi
+
+elif [[ "$OPTION" == "6" ]]; then
   echo "Exiting..."
   exit 0
 
