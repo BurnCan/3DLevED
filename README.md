@@ -108,9 +108,11 @@ cd 3DLevED
 ```
 🚀 Step 2: Make the Script Executable and Run It
 ```bash
-chmod +x rebuild.sh && ./rebuild.sh
+chmod +x build.sh && ./build.sh
 ```
 This launches an interactive menu that helps you build, rebuild, recompile, or run the application.
+
+⚠️Note that if using option 1 to clone the repository you will likely need to make the script executable again before you will be able to run the script. If you see an error like "No Such File Found" when attempting to use ./build.sh run the command in step 2 above.
 
 ---
 ### 🛠️ Manual Setup (Alternative)
@@ -247,9 +249,9 @@ rm -rf 3DLevED
 
 🧹Remove temporary copies of script:
 
-⚠️This does not yet work to remove temporary script files, any undeleted temporary script files (rebuild.sh) are in a directory within
-/tmp for windows and linux or /private/var/folders however finding this directory manually can be quite difficult as the script does not yet copy itself to a temporary directory named 3DLevED but a directory named similar to /tmp/tmp.9N7hV6vCbu
-Under certain circumstances these files and directories are not automatically deleted  after the script is run , to be sure you have deleted all temporary script files run the script and select option 4 which will scan /tmp and /private/var/folders for a file named rebuild.sh and prompt you for deletion. this will be fixed in a future update.
+⚠️This may not yet work to remove temporary script files, any undeleted temporary script files (rebuild.sh) are in a directory within
+/tmp for windows and linux or /private/var/folders however finding this directory manually can be quite difficult if you had previously run an older version as the script did not yet copy itself to a temporary directory named 3DLevED but a directory named similar to /tmp/tmp.9N7hV6vCbu
+Under certain circumstances these files and directories are not automatically deleted  after the script is run , to be sure you have deleted all temporary script files run the script and select option 4 which will scan /tmp and /private/var/folders for a file named rebuild.sh or build.sh and prompt you for deletion. The command below will only remove script files in the newer /tmp/3DLevED directories and remains untested.
 
 ```bash
 find /tmp -type d -name "3DLevED*" -exec rm -rf {} +
