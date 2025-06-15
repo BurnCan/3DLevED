@@ -27,7 +27,12 @@ fi
 
 if [[ "$OPTION" == "1" ]]; then
   # Only copy to temp dir if not already running in one
-  if [[ "$SCRIPT_DIR" != /tmp/* && "$SCRIPT_DIR" != /private/var/folders/* ]]; then
+  TEMP_CHECK=$(realpath "$SCRIPT_DIR")
+  if [[ "$TEMP_CHECK" == /tmp/* || "$TEMP_CHECK" == /private/tmp/* || "$TEMP_CHECK" == /private/var/folders/* ]]; then
+  echo "[DEBUG] Script directory: $SCRIPT_DIR"
+  echo "[DEBUG] Real path resolved: $(realpath "$SCRIPT_DIR")"
+
+
   TEMP_DIR="/tmp/3DLevED"
 
   # Clean up previous temp dir to avoid conflicts
