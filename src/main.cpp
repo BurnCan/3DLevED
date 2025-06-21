@@ -1,8 +1,10 @@
 #include <glad/glad.h>
-
-#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <windows.h>
 #include <GLFW/glfw3native.h>
+#endif
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -15,9 +17,7 @@
 #include <string>
 #include "shader_loader.h"
 #include "editorCamera.h"
-#ifdef _WIN32
-#include <windows.h>
-#endif
+
 
 
 // Window dimensions
