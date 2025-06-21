@@ -282,11 +282,36 @@ int main()
 //}
 
 
+//std::string loadShaderSource(const char* filepath)
+//{
+    //std::ifstream file(filepath);
+    //std::stringstream buffer;
+   // buffer << file.rdbuf();
+    //return buffer.str();
+//}
+
+
+//Print shader to console
 std::string loadShaderSource(const char* filepath)
 {
+    std::cout << "Attempting to load shader from: " << filepath << std::endl;
+
     std::ifstream file(filepath);
+
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open shader file: " << filepath << std::endl;
+        return "";
+    }
+
     std::stringstream buffer;
     buffer << file.rdbuf();
+
+    std::cout << "Shader loaded successfully from: " << filepath << std::endl;
+
+    // Optional: print shader source
+    std::cout << "Shader source content:\n" << buffer.str() << std::endl;
+
     return buffer.str();
 }
 
