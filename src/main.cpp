@@ -1,5 +1,8 @@
 #include <glad/glad.h>
+
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -12,7 +15,9 @@
 #include <string>
 #include "shader_loader.h"
 #include "editorCamera.h"
-
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 
 // Window dimensions
@@ -65,6 +70,16 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
+#ifdef _WIN32
+    // Force window to front
+    HWND hwnd = glfwGetWin32Window(window);  // Requires linking with glfw3.dll that supports Win32
+    SetForegroundWindow(hwnd);
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+    SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+#endif
+
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

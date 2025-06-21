@@ -27,9 +27,9 @@ OpenGL-Compatible GPU
 ### 1. Download and install the appropriate 64-bit version from the [MSYS2 website](https://www.msys2.org). 
 
 
-### 2. Open MSYS2 MinGW 64-bit terminal
+### 2. Open MSYS2 UCRT 64-bit terminal
 
-> Not `MSYS`, `UCRT`, or `CLANG`.
+> Not `MSYS`, `MinGW`, or `CLANG`.
 
 ### 3. Update the package database and core system
 ```bash
