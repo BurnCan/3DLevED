@@ -17,8 +17,13 @@
 
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
+//Display size 
+int display_w, display_h;
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 //void processInput(GLFWwindow* window);
 std::string loadShaderSource(const char* filepath);
 GLuint createShaderProgram(const char* vertexPath, const char* fragmentPath);
@@ -47,6 +52,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS
 #endif
@@ -142,7 +148,7 @@ int main()
     glEnableVertexAttribArray(1);
 
     GLuint shaderProgram = createShaderProgram("shaders/basic.vert", "shaders/basic.frag");
-    
+
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -180,8 +186,8 @@ int main()
 
         // ImGui windows 
         camera.renderDebugWindow();
-        
-        
+
+
 
 
         // Clear and draw your scene
@@ -192,9 +198,14 @@ int main()
         glUseProgram(shaderProgram);
 
         // Matrices
+        //Model matrix
         glm::mat4 model = glm::mat4(1.0f);
+        //View matrix
         glm::mat4 view = camera.getViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
+        //Projection matrix
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
+        //MVP matrix
         glm::mat4 mvp = projection * view * model;
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
 
@@ -202,10 +213,10 @@ int main()
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36); // Replace as needed
 
-        
+
         // Render ImGui 
         ImGui::Render();
-        int display_w, display_h;
+
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -228,10 +239,7 @@ int main()
     return 0;
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
+
 
 
 
@@ -291,7 +299,7 @@ GLuint createShaderProgram(const char* vertexPath, const char* fragmentPath)
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    
+
 
     return shaderProgram;
 }
