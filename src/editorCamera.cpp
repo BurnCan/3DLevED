@@ -106,5 +106,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    if (ImGui::GetIO().WantCaptureMouse) return; // Prevent camera zoom when ImGui is using the scroll
     camera.processMouseScroll(static_cast<float>(yoffset));
 }
