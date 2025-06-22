@@ -213,6 +213,24 @@ void renderShaderEditor(const std::filesystem::path& shaderDir) {
                 std::cout << "Shader reloaded successfully." << std::endl;
             }
         }
+        
+        ImGui::SameLine();
+        
+        if (ImGui::Button("Archive Shader")) {
+            std::filesystem::path archiveDir = std::filesystem::path("../../shaders");
+            if (!std::filesystem::exists(archiveDir)) {
+                std::filesystem::create_directories(archiveDir);
+            }
+
+            std::filesystem::path archivePath = archiveDir / currentShaderPath.filename();
+
+            std::ofstream out(archivePath);
+            out.write(shaderBuffer.data(), strlen(shaderBuffer.data()));
+            out.close();
+
+            std::cout << "Shader archived to: " << archivePath << std::endl;
+        }
+
     }
 
     ImGui::End();
