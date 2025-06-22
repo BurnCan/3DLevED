@@ -15,7 +15,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include "shader_loader.h"
+#include "shader_utility.h"
 #include "editorCamera.h"
 
 
@@ -29,9 +29,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-//void processInput(GLFWwindow* window);
+
 std::string loadShaderSource(const char* filepath);
-GLuint createShaderProgram(const char* vertexPath, const char* fragmentPath);
+
 
 //Camera Variables
 //glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -162,7 +162,8 @@ int main()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    GLuint shaderProgram = createShaderProgram("shaders/basic.vert", "shaders/basic.frag");
+    //Initialize shaderProgram
+    shaderProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
 
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -201,7 +202,7 @@ int main()
 
         // ImGui windows 
         camera.renderDebugWindow();
-
+        renderShaderEditor("shaders/");
 
 
 
@@ -229,8 +230,10 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36); // Replace as needed
 
 
+
         // Render ImGui 
         ImGui::Render();
+        
 
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
@@ -315,34 +318,6 @@ std::string loadShaderSource(const char* filepath)
     return buffer.str();
 }
 
-GLuint createShaderProgram(const char* vertexPath, const char* fragmentPath)
-{
-    std::string vertCode = loadShaderSource(vertexPath);
-    std::string fragCode = loadShaderSource(fragmentPath);
-
-    const char* vShaderCode = vertCode.c_str();
-    const char* fShaderCode = fragCode.c_str();
-
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vShaderCode, NULL);
-    glCompileShader(vertexShader);
-
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fShaderCode, NULL);
-    glCompileShader(fragmentShader);
-
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-
-
-    return shaderProgram;
-}
 
 
 
