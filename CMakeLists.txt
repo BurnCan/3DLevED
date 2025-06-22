@@ -11,17 +11,30 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 
-# Copy shader files to the appropriate location
 if(APPLE)
     set(MACOSX_BUNDLE_BUNDLE_NAME "3DLevED")
     set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.example.3dleved")
     set(MACOSX_BUNDLE TRUE)
 
-    set(SHADER_BUNDLE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/3DLevED.app/Contents/Resources")
-    file(COPY shaders DESTINATION ${SHADER_BUNDLE_PATH})
+    set(RESOURCE_DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/3DLevED.app/Contents/Resources")
 else()
-    file(COPY shaders DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    set(RESOURCE_DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 endif()
+
+# Get all files recursively inside 'archive', relative to the archive path
+file(GLOB_RECURSE ARCHIVE_CONTENTS RELATIVE "${CMAKE_SOURCE_DIR}/archive" "${CMAKE_SOURCE_DIR}/archive/*")
+
+foreach(ITEM IN LISTS ARCHIVE_CONTENTS)
+    set(SRC "${CMAKE_SOURCE_DIR}/archive/${ITEM}")
+    set(DST "${RESOURCE_DESTINATION}/${ITEM}")
+
+    # Make sure the destination directory exists
+    get_filename_component(DST_DIR "${DST}" DIRECTORY)
+    file(MAKE_DIRECTORY "${DST_DIR}")
+
+    # Copy file
+    file(COPY "${SRC}" DESTINATION "${DST_DIR}")
+endforeach()
 
 include(FetchContent)
 
