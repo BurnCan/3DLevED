@@ -12,7 +12,7 @@ uniform vec3 objectColor; // e.g., vec3(0.8, 0.2, 0.2)
 void main()
 {
     vec3 norm = normalize(Normal);
-    vec3 lightDirNorm = normalize(-lightDir);
+    vec3 lightDirNorm = normalize(lightDir);
 
     float diff = max(dot(norm, lightDirNorm), 0.0);
     vec3 diffuse = diff * lightColor;
