@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+﻿#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -33,10 +33,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 std::string loadShaderSource(const char* filepath);
 
 
-//Camera Variables
-//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-//glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
 //Camera Timing to control movement speed
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f;
@@ -92,59 +89,59 @@ int main()
 
     //Cube
     float vertices[] = {
-        // Back face
-        -0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
+        // Back face (0, 0, -1)
+        -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
 
-        -0.5f, -0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
 
-         // Front face
-         -0.5f, -0.5f,  0.5f,
-          0.5f, -0.5f,  0.5f,
-          0.5f,  0.5f,  0.5f,
+         // Front face (0, 0, 1)
+         -0.5f, -0.5f,  0.5f,   0.0f,  0.0f, 1.0f,
+          0.5f, -0.5f,  0.5f,   0.0f,  0.0f, 1.0f,
+          0.5f,  0.5f,  0.5f,   0.0f,  0.0f, 1.0f,
 
-         -0.5f, -0.5f,  0.5f,
-          0.5f,  0.5f,  0.5f,
-         -0.5f,  0.5f,  0.5f,
+         -0.5f, -0.5f,  0.5f,   0.0f,  0.0f, 1.0f,
+          0.5f,  0.5f,  0.5f,   0.0f,  0.0f, 1.0f,
+         -0.5f,  0.5f,  0.5f,   0.0f,  0.0f, 1.0f,
 
-         // Left face
-         -0.5f, -0.5f, -0.5f,
-         -0.5f, -0.5f,  0.5f,
-         -0.5f,  0.5f,  0.5f,
+         // Left face (-1, 0, 0)
+         -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,
+         -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,
+         -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,
 
-         -0.5f, -0.5f, -0.5f,
-         -0.5f,  0.5f,  0.5f,
-         -0.5f,  0.5f, -0.5f,
+         -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,
+         -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,
+         -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,
 
-         // Right face
-          0.5f, -0.5f, -0.5f,
-          0.5f,  0.5f,  0.5f,
-          0.5f, -0.5f,  0.5f,
+         // Right face (1, 0, 0)
+          0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,
+          0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,
+          0.5f, -0.5f,  0.5f,   1.0f,  0.0f,  0.0f,
 
-          0.5f, -0.5f, -0.5f,
-          0.5f,  0.5f, -0.5f,
-          0.5f,  0.5f,  0.5f,
+          0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,
+          0.5f,  0.5f, -0.5f,   1.0f,  0.0f,  0.0f,
+          0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,
 
-          // Top face
-          -0.5f,  0.5f, -0.5f,
-          -0.5f,  0.5f,  0.5f,
-           0.5f,  0.5f,  0.5f,
+          // Top face (0, 1, 0)
+          -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,
+          -0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,
+           0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,
 
-          -0.5f,  0.5f, -0.5f,
-           0.5f,  0.5f,  0.5f,
-           0.5f,  0.5f, -0.5f,
+          -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,
+           0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,
+           0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,
 
-           // Bottom face
-           -0.5f, -0.5f, -0.5f,
-            0.5f, -0.5f,  0.5f,
-            0.5f, -0.5f, -0.5f,
+           // Bottom face (0, -1, 0)
+           -0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,
+            0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,
+            0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,
 
-           -0.5f, -0.5f, -0.5f,
-           -0.5f, -0.5f,  0.5f,
-            0.5f, -0.5f,  0.5f,
+           -0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,
+           -0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,
+            0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f
     };
 
 
@@ -157,10 +154,10 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    //glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     //Initialize shaderProgram
     shaderProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
@@ -213,19 +210,27 @@ int main()
         // Use your shader
         glUseProgram(shaderProgram);
 
-        // Matrices
-        //Model matrix
+        // --- Set matrices ---
         glm::mat4 model = glm::mat4(1.0f);
-        //View matrix
         glm::mat4 view = camera.getViewMatrix();
-        //Projection matrix
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
-        //MVP matrix
         glm::mat4 mvp = projection * view * model;
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
 
-        // Draw
+        // Send MVP and model matrix to shader
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+        // --- Set lighting uniforms ---
+        glm::vec3 lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
+        glm::vec3 lightColor = glm::vec3(1.0f);
+        glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.3f);
+
+        glUniform3fv(glGetUniformLocation(shaderProgram, "lightDir"), 1, glm::value_ptr(lightDir));
+        glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, glm::value_ptr(lightColor));
+        glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, glm::value_ptr(objectColor));
+
+        // --- Now draw your object ---
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36); // Replace as needed
 
@@ -233,7 +238,7 @@ int main()
 
         // Render ImGui 
         ImGui::Render();
-        
+
 
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
@@ -317,7 +322,3 @@ std::string loadShaderSource(const char* filepath)
 
     return buffer.str();
 }
-
-
-
-
