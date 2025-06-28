@@ -217,7 +217,7 @@ void renderShaderEditor(const std::filesystem::path& shaderDir) {
         ImGui::SameLine();
         
         if (ImGui::Button("Archive Shader")) {
-            std::filesystem::path archiveDir = std::filesystem::path("../../shaders");
+            std::filesystem::path archiveDir = std::filesystem::path("../../archive/shaders");
             if (!std::filesystem::exists(archiveDir)) {
                 std::filesystem::create_directories(archiveDir);
             }
