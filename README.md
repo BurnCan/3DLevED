@@ -281,18 +281,48 @@ This cleans up any leftover setup script directories.
 ```
 
 
-## ⚠️ Note on Working with Shaders:
-The shaders/ directory is automatically copied into the build/bin/ directory by CMake. This ensures that the built application has access to the required shader files.
+## ⚠️ Working with Shaders in 3DLevED
 
-💡 **Important: When modifying shaders, always edit them in the main project’s shaders/ directory, not in the build/bin/shaders/ copy. The files in build/bin are overwritten every time you re-run CMake or rebuild the project.**
+The `archive/` directory contains all runtime assets needed by the application, including the `shaders/` subdirectory.
+During a build, CMake **recursively copies the contents of `archive/`** into the appropriate runtime location:
 
-To apply your shader changes:
+- **macOS:** `build/3DLevED.app/Contents/Resources/`
+- **Linux/Windows:** `build/bin/`
 
-Make edits in shaders/ (in the project root).
+This ensures that your application has access to all necessary shader files and supporting data.
 
-Recompile the project as described above.
+---
 
-This will ensure that your changes are properly copied into the app bundle and used at runtime.
+### 💡 Shader Editing Workflow
+
+To modify and maintain shader files properly, follow this workflow:
+
+#### 🎮 Runtime Shader Location
+- **Live shaders are loaded from:**  
+
+build/bin/shaders/
+
+(or inside the app bundle on macOS)
+
+- When the application runs, it reads shaders from this location.
+
+#### ✏️ Editing Shaders
+- Use the in-app **Shader Utility Editor** in 3DLevED:
+- The **Save** button updates the file in `build/bin/shaders/`.
+- The **Reload** button re-reads the file from `build/bin/shaders/`.
+
+> ✅ **Important:** Always make shader edits through the in-app editor (or directly in `build/bin/shaders/`) — changes in the original `archive/shaders/` directory will be **overwritten** next time you rebuild the project.
+
+#### 📦 Archiving Shader Changes
+- To persist a modified shader file:
+- Use the **Archive** button in the Shader Utility.
+- This saves the updated shader file back to:
+  
+  archive/shaders/
+  
+- On the next build, this updated file will be included in the runtime copy.
+
+---
 
 ## ✅ You're good to go!
 
