@@ -221,10 +221,17 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
+        // This should go right before you set the shader uniforms
+        glm::vec3 lightDir = glm::normalize(camera.getPosition());  // Direction the camera is looking
+
+
         // --- Set lighting uniforms ---
-        glm::vec3 lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
+        //glm::vec3 lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
         glm::vec3 lightColor = glm::vec3(1.0f);
         glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.3f);
+
+
+
 
         glUniform3fv(glGetUniformLocation(shaderProgram, "lightDir"), 1, glm::value_ptr(lightDir));
         glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, glm::value_ptr(lightColor));
