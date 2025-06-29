@@ -4,17 +4,18 @@
 #include <sstream>
 #include <string>
 #include <filesystem>
-#include <glad/glad.h>  // Use GLAD instead of GLEW
+#include <glad/glad.h>
 #include "imgui.h"
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-GLuint shaderProgram = 0;  // Define the global variable
+GLuint shaderProgram = 0;
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
 #endif
 
-// Helper to get directory where executable lives
 std::string getExecutableDir() {
 #if defined(__APPLE__)
     char path[1024];
@@ -25,10 +26,9 @@ std::string getExecutableDir() {
         return std::filesystem::canonical(resourcesPath).string();
     }
 #endif
-    return ".";  // fallback for other platforms
+    return ".";
 }
 
-// Load shader source code from file, including fallback for macOS app bundle
 std::string loadShaderSource(const std::string& filename) {
     std::string shaderPath = "shaders/" + filename;
     std::ifstream shaderFile(shaderPath);
@@ -55,14 +55,11 @@ std::string loadShaderSource(const std::string& filename) {
         return "";
     }
 
-    std::cout << "Shader loaded successfully from: " << shaderPath << std::endl;
-
     std::stringstream buffer;
     buffer << shaderFile.rdbuf();
     return buffer.str();
 }
 
-// Compile shader
 GLuint compileShader(GLenum shaderType, const std::string& source) {
     GLuint shader = glCreateShader(shaderType);
     const char* shaderSource = source.c_str();
@@ -90,7 +87,7 @@ GLuint createShaderProgramFromFile(const std::string& vertexShaderPath, const st
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
-    GLuint shaderProgram = glCreateProgram();  // Create a new shader program
+    GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
@@ -109,12 +106,9 @@ GLuint createShaderProgramFromFile(const std::string& vertexShaderPath, const st
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    return shaderProgram;  // Return the newly created shader program
+    return shaderProgram;
 }
 
-
-
-// List all .vert/.frag shader files from a directory
 std::vector<std::filesystem::path> listShaderFiles(const std::filesystem::path& directory) {
     std::vector<std::filesystem::path> files;
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
@@ -127,7 +121,6 @@ std::vector<std::filesystem::path> listShaderFiles(const std::filesystem::path& 
     return files;
 }
 
-// Save shader source to file
 bool saveShaderSource(const std::filesystem::path& path, const std::string& content) {
     std::ofstream out(path);
     if (!out.is_open()) {
@@ -135,105 +128,125 @@ bool saveShaderSource(const std::filesystem::path& path, const std::string& cont
         return false;
     }
     out << content;
-    out.close();
     return true;
 }
 
-
-// Callback for buffer resizing
 static int TextEditCallback(ImGuiInputTextCallbackData* data) {
     if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
         auto* buf = reinterpret_cast<std::vector<char>*>(data->UserData);
-        buf->resize(data->BufSize);  // Resize the buffer
+        buf->resize(data->BufSize);
         data->Buf = buf->data();
     }
     return 0;
 }
 
-void renderShaderEditor(const std::filesystem::path& shaderDir) {
+std::vector<float> generateXZGridLines(float size, int divisions) {
+    std::vector<float> gridVertices;
+    float halfSize = size / 2.0f;
+    float step = size / divisions;
+
+    for (int i = 0; i <= divisions; ++i) {
+        float offset = -halfSize + i * step;
+        // Line along Z
+        gridVertices.push_back(offset); gridVertices.push_back(0.0f); gridVertices.push_back(-halfSize);
+        gridVertices.push_back(offset); gridVertices.push_back(0.0f); gridVertices.push_back(halfSize);
+        // Line along X
+        gridVertices.push_back(-halfSize); gridVertices.push_back(0.0f); gridVertices.push_back(offset);
+        gridVertices.push_back(halfSize);  gridVertices.push_back(0.0f); gridVertices.push_back(offset);
+    }
+
+    return gridVertices;
+}
+
+void renderShaderEditor(const std::filesystem::path& shaderDir, const glm::mat4& mvp) {
     static std::filesystem::path currentShaderPath;
     static std::vector<std::filesystem::path> shaders = listShaderFiles(shaderDir);
     static int selectedIndex = -1;
     static std::vector<char> shaderBuffer;
 
+    static bool showGrid = true;
     ImGui::Begin("Shader Utility");
 
-    // Shader selection dropdown
+    // === Shader File Dropdown ===
     if (ImGui::BeginCombo("Shader Files", selectedIndex >= 0 ? shaders[selectedIndex].filename().string().c_str() : "Select Shader")) {
         for (int i = 0; i < shaders.size(); ++i) {
             bool selected = (selectedIndex == i);
             if (ImGui::Selectable(shaders[i].filename().string().c_str(), selected)) {
                 selectedIndex = i;
                 currentShaderPath = shaders[i];
-
-                // Read shader file into buffer
                 std::ifstream in(currentShaderPath);
                 std::stringstream ss;
                 ss << in.rdbuf();
                 std::string fileContent = ss.str();
                 shaderBuffer = std::vector<char>(fileContent.begin(), fileContent.end());
-                shaderBuffer.push_back('\0'); // Ensure null-terminated
+                shaderBuffer.push_back('\0');
             }
         }
         ImGui::EndCombo();
     }
 
-    
-
-    // If a shader file is selected
     if (selectedIndex >= 0 && !shaderBuffer.empty()) {
-        // Text editor
         ImGui::InputTextMultiline("##ShaderText", shaderBuffer.data(), shaderBuffer.size(),
             ImVec2(-FLT_MIN, 300),
             ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_CallbackResize,
             TextEditCallback, &shaderBuffer);
 
-        // Save button
         if (ImGui::Button("Save Shader")) {
-            std::ofstream out(currentShaderPath);
-            if (out.is_open()) {
-                out << shaderBuffer.data(); // Save edited shader code
-                out.close();
-                std::cout << "Shader saved to: " << currentShaderPath << std::endl;
-            }
-            else {
-                std::cerr << "Failed to open shader for writing: " << currentShaderPath << std::endl;
-            }
+            saveShaderSource(currentShaderPath, shaderBuffer.data());
         }
-
         ImGui::SameLine();
-
-        // Reload button
         if (ImGui::Button("Reload Shader")) {
             GLuint newProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
             if (newProgram != 0) {
-                glDeleteProgram(shaderProgram); // Replace old shader program
+                glDeleteProgram(shaderProgram);
                 shaderProgram = newProgram;
                 glUseProgram(shaderProgram);
-                std::cout << "Shader reloaded successfully." << std::endl;
             }
         }
-        
         ImGui::SameLine();
-        
         if (ImGui::Button("Archive Shader")) {
-            std::filesystem::path archiveDir = std::filesystem::path("../../archive/shaders");
-            if (!std::filesystem::exists(archiveDir)) {
-                std::filesystem::create_directories(archiveDir);
-            }
-
-            std::filesystem::path archivePath = archiveDir / currentShaderPath.filename();
-
-            std::ofstream out(archivePath);
+            std::filesystem::path archiveDir = "../../archive/shaders";
+            std::filesystem::create_directories(archiveDir);
+            std::ofstream out(archiveDir / currentShaderPath.filename());
             out.write(shaderBuffer.data(), strlen(shaderBuffer.data()));
-            out.close();
-
-            std::cout << "Shader archived to: " << archivePath << std::endl;
         }
+    }
 
+    ImGui::Checkbox("Show Grid", &showGrid);
+
+    static bool gridInitialized = false;
+    static GLuint gridVAO, gridVBO, gridShader;
+    static std::vector<float> gridVertices;
+
+    if (!gridInitialized) {
+        gridVertices = generateXZGridLines(10.0f, 20);
+        glGenVertexArrays(1, &gridVAO);
+        glGenBuffers(1, &gridVBO);
+
+        glBindVertexArray(gridVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+        glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), gridVertices.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glBindVertexArray(0);
+
+        gridShader = createShaderProgramFromFile("grid.vert", "grid.frag");
+        gridInitialized = true;
+    }
+
+        if (showGrid) {
+        glUseProgram(gridShader);
+        glUniformMatrix4fv(glGetUniformLocation(gridShader, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+        glBindVertexArray(gridVAO);
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(gridVertices.size() / 3));
+
+        // 🔁 Restore previous state after drawing grid
+        glUseProgram(shaderProgram);       // Restore cube shader
+        glBindVertexArray(0);              // Optionally unbind VAO
     }
 
     ImGui::End();
+
 }
 
 

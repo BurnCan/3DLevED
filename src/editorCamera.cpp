@@ -73,6 +73,7 @@ void EditorCamera::renderDebugWindow() {
     ImGui::Begin("Camera Debug");
     ImGui::Checkbox("Invert processMouseMovement Pitch", &invertPitch);
     ImGui::Checkbox("Use Camera Light", &useCameraLight);
+
     ImGui::End();
 }
 
