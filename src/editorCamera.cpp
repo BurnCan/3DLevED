@@ -33,9 +33,7 @@ void EditorCamera::processMouseScroll(float yoffset) {
     updateCameraVectors();
 }
 
-glm::vec3 EditorCamera::getFront() const {
-    return front;
-}
+
 
 void EditorCamera::updateCameraVectors() {
     glm::vec3 direction;
@@ -55,6 +53,10 @@ glm::vec3 EditorCamera::getPosition() const {
     return position;
 }
 
+glm::vec3 EditorCamera::getFront() const {
+    return front;
+}
+
 void EditorCamera::setTarget(const glm::vec3& target) {
     this->target = target;
     updateCameraVectors();
@@ -70,6 +72,7 @@ glm::vec3 EditorCamera::getTarget() const {
 void EditorCamera::renderDebugWindow() {
     ImGui::Begin("Camera Debug");
     ImGui::Checkbox("Invert processMouseMovement Pitch", &invertPitch);
+    ImGui::Checkbox("Use Camera Light", &useCameraLight);
     ImGui::End();
 }
 

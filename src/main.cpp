@@ -226,8 +226,12 @@ int main()
 
 
         // --- Set lighting uniforms ---
-        //glm::vec3 lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
-        glm::vec3 lightDir = -camera.getFront(); // Light always shines where the camera looks// Inverted!
+        glm::vec3 lightDir;
+        if (camera.useCameraLight) {
+        lightDir = -camera.getFront();  // Use camera-attached light
+        } else {
+        lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));  // Default static light
+}
         glm::vec3 lightColor = glm::vec3(1.0f);
         glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.3f);
 

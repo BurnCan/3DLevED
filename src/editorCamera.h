@@ -10,6 +10,7 @@
 
 class EditorCamera {
 public:
+    bool useCameraLight = true;
     glm::vec3 getFront() const;
     float getYaw() const { return yaw; }
     float getPitch() const { return pitch; }
