@@ -10,6 +10,10 @@
 
 class EditorCamera {
 public:
+    glm::vec3 getFront() const;
+    float getYaw() const { return yaw; }
+    float getPitch() const { return pitch; }
+
     EditorCamera(float yaw = -90.0f, float pitch = 0.0f, float distance = 5.0f);
 
     void update(float deltaTime);
@@ -28,6 +32,7 @@ public:
     bool invertPitch = true; 
 
 private:
+    glm::vec3 front;
     float yaw;
     float pitch;
     float distance;

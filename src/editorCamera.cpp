@@ -33,12 +33,16 @@ void EditorCamera::processMouseScroll(float yoffset) {
     updateCameraVectors();
 }
 
+glm::vec3 EditorCamera::getFront() const {
+    return front;
+}
+
 void EditorCamera::updateCameraVectors() {
     glm::vec3 direction;
     direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
     direction.y = sin(glm::radians(pitch));
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction = glm::normalize(direction);
+    front = glm::normalize(direction);
 
     position = target - direction * distance;
 }
