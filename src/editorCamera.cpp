@@ -50,7 +50,7 @@ void EditorCamera::updateCameraVectors() {
     position = target - direction * distance;
 }
 
-std::vector<float> generateXZGridLines(float size, int divisions) {
+std::vector<float> EditorCamera::generateXZGridLines(float size, int divisions) {
     std::vector<float> gridVertices;
     float halfSize = size / 2.0f;
     float step = size / divisions;
@@ -72,6 +72,7 @@ void EditorCamera::initGrid() {
     if (gridInitialized) return;
 
     gridVertices = generateXZGridLines(10.0f, 20);
+
     glGenVertexArrays(1, &gridVAO);
     glGenBuffers(1, &gridVBO);
 
@@ -82,9 +83,14 @@ void EditorCamera::initGrid() {
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
-    gridShader = createShaderProgramFromFile("grid.vert", "grid.frag");
+    setupGridShader(); // <- compiled separately
     gridInitialized = true;
 }
+
+void EditorCamera::setupGridShader() {
+    gridShader = createShaderProgramFromFile("grid.vert", "grid.frag");
+}
+
 
 
 
@@ -166,7 +172,6 @@ void EditorCamera::renderGrid(const glm::mat4& mvp) {
     if (!showGrid) return;
     initGrid();
 
-    // Save current shader program
     GLint currentProgram = 0;
     glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
 
@@ -174,9 +179,8 @@ void EditorCamera::renderGrid(const glm::mat4& mvp) {
     glUniformMatrix4fv(glGetUniformLocation(gridShader, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
     glBindVertexArray(gridVAO);
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(gridVertices.size() / 3));
-
-    // Restore previous shader program and VAO state
     glBindVertexArray(0);
+
     glUseProgram(currentProgram);
 }
 
