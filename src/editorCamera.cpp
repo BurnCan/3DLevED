@@ -1,8 +1,13 @@
+#include <glad/glad.h>
 #include "editorCamera.h"
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <algorithm>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include "shader_utility.h"  // For createShaderProgramFromFile
+
 EditorCamera::EditorCamera(float yaw, float pitch, float distance)
     : yaw(yaw), pitch(pitch), distance(distance), target(0.0f), up(0.0f, 1.0f, 0.0f)
 {
@@ -45,6 +50,44 @@ void EditorCamera::updateCameraVectors() {
     position = target - direction * distance;
 }
 
+std::vector<float> generateXZGridLines(float size, int divisions) {
+    std::vector<float> gridVertices;
+    float halfSize = size / 2.0f;
+    float step = size / divisions;
+
+    for (int i = 0; i <= divisions; ++i) {
+        float offset = -halfSize + i * step;
+        // Line along Z
+        gridVertices.push_back(offset); gridVertices.push_back(0.0f); gridVertices.push_back(-halfSize);
+        gridVertices.push_back(offset); gridVertices.push_back(0.0f); gridVertices.push_back(halfSize);
+        // Line along X
+        gridVertices.push_back(-halfSize); gridVertices.push_back(0.0f); gridVertices.push_back(offset);
+        gridVertices.push_back(halfSize);  gridVertices.push_back(0.0f); gridVertices.push_back(offset);
+    }
+
+    return gridVertices;
+}
+
+void EditorCamera::initGrid() {
+    if (gridInitialized) return;
+
+    gridVertices = generateXZGridLines(10.0f, 20);
+    glGenVertexArrays(1, &gridVAO);
+    glGenBuffers(1, &gridVBO);
+
+    glBindVertexArray(gridVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+    glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), gridVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+
+    gridShader = createShaderProgramFromFile("grid.vert", "grid.frag");
+    gridInitialized = true;
+}
+
+
+
 glm::mat4 EditorCamera::getViewMatrix() const {
     return glm::lookAt(position, target, up);
 }
@@ -73,6 +116,7 @@ void EditorCamera::renderDebugWindow() {
     ImGui::Begin("Camera Debug");
     ImGui::Checkbox("Invert processMouseMovement Pitch", &invertPitch);
     ImGui::Checkbox("Use Camera Light", &useCameraLight);
+    ImGui::Checkbox("Show Grid", &showGrid);
 
     ImGui::End();
 }
@@ -117,3 +161,22 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     if (ImGui::GetIO().WantCaptureMouse) return; // Prevent camera zoom when ImGui is using the scroll
     camera.processMouseScroll(static_cast<float>(yoffset));
 }
+
+void EditorCamera::renderGrid(const glm::mat4& mvp) {
+    if (!showGrid) return;
+    initGrid();
+
+    // Save current shader program
+    GLint currentProgram = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+
+    glUseProgram(gridShader);
+    glUniformMatrix4fv(glGetUniformLocation(gridShader, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+    glBindVertexArray(gridVAO);
+    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(gridVertices.size() / 3));
+
+    // Restore previous shader program and VAO state
+    glBindVertexArray(0);
+    glUseProgram(currentProgram);
+}
+

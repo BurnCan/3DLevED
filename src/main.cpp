@@ -202,8 +202,7 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // ImGui windows 
-        camera.renderDebugWindow();
+
 
 
 
@@ -227,6 +226,10 @@ int main()
         // Send MVP and model matrix to shader
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+        // ImGui windows
+        camera.renderDebugWindow();
+        camera.renderGrid(mvp);  // Draw the grid if enabled
 
         renderShaderEditor("shaders/", mvp);
 

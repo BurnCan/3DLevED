@@ -29,10 +29,19 @@ public:
 
     // ImGui camera debug
     void renderDebugWindow();
+    void renderGrid(const glm::mat4& mvp); // NEW
+    bool showGrid = true;                  // Moved from shader_utility
 
     bool invertPitch = true; 
 
 private:
+
+    bool gridInitialized = false;
+    GLuint gridVAO = 0, gridVBO = 0, gridShader = 0;
+    std::vector<float> gridVertices;
+
+    void initGrid(); // NEW
+
     glm::vec3 front;
     float yaw;
     float pitch;

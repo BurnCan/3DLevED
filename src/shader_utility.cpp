@@ -140,23 +140,7 @@ static int TextEditCallback(ImGuiInputTextCallbackData* data) {
     return 0;
 }
 
-std::vector<float> generateXZGridLines(float size, int divisions) {
-    std::vector<float> gridVertices;
-    float halfSize = size / 2.0f;
-    float step = size / divisions;
 
-    for (int i = 0; i <= divisions; ++i) {
-        float offset = -halfSize + i * step;
-        // Line along Z
-        gridVertices.push_back(offset); gridVertices.push_back(0.0f); gridVertices.push_back(-halfSize);
-        gridVertices.push_back(offset); gridVertices.push_back(0.0f); gridVertices.push_back(halfSize);
-        // Line along X
-        gridVertices.push_back(-halfSize); gridVertices.push_back(0.0f); gridVertices.push_back(offset);
-        gridVertices.push_back(halfSize);  gridVertices.push_back(0.0f); gridVertices.push_back(offset);
-    }
-
-    return gridVertices;
-}
 
 void renderShaderEditor(const std::filesystem::path& shaderDir, const glm::mat4& mvp) {
     static std::filesystem::path currentShaderPath;
@@ -164,7 +148,7 @@ void renderShaderEditor(const std::filesystem::path& shaderDir, const glm::mat4&
     static int selectedIndex = -1;
     static std::vector<char> shaderBuffer;
 
-    static bool showGrid = true;
+
     ImGui::Begin("Shader Utility");
 
     // === Shader File Dropdown ===
@@ -212,38 +196,7 @@ void renderShaderEditor(const std::filesystem::path& shaderDir, const glm::mat4&
         }
     }
 
-    ImGui::Checkbox("Show Grid", &showGrid);
 
-    static bool gridInitialized = false;
-    static GLuint gridVAO, gridVBO, gridShader;
-    static std::vector<float> gridVertices;
-
-    if (!gridInitialized) {
-        gridVertices = generateXZGridLines(10.0f, 20);
-        glGenVertexArrays(1, &gridVAO);
-        glGenBuffers(1, &gridVBO);
-
-        glBindVertexArray(gridVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
-        glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), gridVertices.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        glBindVertexArray(0);
-
-        gridShader = createShaderProgramFromFile("grid.vert", "grid.frag");
-        gridInitialized = true;
-    }
-
-        if (showGrid) {
-        glUseProgram(gridShader);
-        glUniformMatrix4fv(glGetUniformLocation(gridShader, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
-        glBindVertexArray(gridVAO);
-        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(gridVertices.size() / 3));
-
-        // 🔁 Restore previous state after drawing grid
-        glUseProgram(shaderProgram);       // Restore cube shader
-        glBindVertexArray(0);              // Optionally unbind VAO
-    }
 
     ImGui::End();
 
