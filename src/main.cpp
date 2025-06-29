@@ -44,7 +44,26 @@ float lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
 
 
+std::vector<float> generateXZGridLines(float size, int divisions) {
+    std::vector<float> gridVertices;
 
+    float halfSize = size / 2.0f;
+    float step = size / divisions;
+
+    for (int i = 0; i <= divisions; ++i) {
+        float offset = -halfSize + i * step;
+
+        // Line parallel to Z (along X axis)
+        gridVertices.push_back(offset); gridVertices.push_back(0.0f); gridVertices.push_back(-halfSize);
+        gridVertices.push_back(offset); gridVertices.push_back(0.0f); gridVertices.push_back(halfSize);
+
+        // Line parallel to X (along Z axis)
+        gridVertices.push_back(-halfSize); gridVertices.push_back(0.0f); gridVertices.push_back(offset);
+        gridVertices.push_back(halfSize);  gridVertices.push_back(0.0f); gridVertices.push_back(offset);
+    }
+
+    return gridVertices;
+}
 
 
 
@@ -162,6 +181,26 @@ int main()
     //Initialize shaderProgram
     shaderProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
 
+    std::vector<float> grid = generateXZGridLines(10.0f, 20); // 10x10 units, 20 divisions
+
+GLuint gridVAO, gridVBO;
+glGenVertexArrays(1, &gridVAO);
+glGenBuffers(1, &gridVBO);
+
+glBindVertexArray(gridVAO);
+glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+glBufferData(GL_ARRAY_BUFFER, grid.size() * sizeof(float), grid.data(), GL_STATIC_DRAW);
+
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);
+
+glBindVertexArray(0);
+
+GLuint gridShader = createShaderProgramFromFile("grid.vert", "grid.frag");
+
+
+
+
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -246,6 +285,13 @@ int main()
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36); // Replace as needed
 
+        //Draw grid
+        glUseProgram(gridShader);
+        glUniformMatrix4fv(glGetUniformLocation(gridShader, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+
+        glBindVertexArray(gridVAO);
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(grid.size() / 3));
+
 
 
         // Render ImGui 
@@ -273,6 +319,10 @@ int main()
     glfwTerminate();
     return 0;
 }
+
+
+
+
 
 
 
@@ -311,26 +361,3 @@ int main()
 //}
 
 
-//Print shader to console
-std::string loadShaderSource(const char* filepath)
-{
-    std::cout << "Attempting to load shader from: " << filepath << std::endl;
-
-    std::ifstream file(filepath);
-
-    if (!file.is_open())
-    {
-        std::cerr << "Failed to open shader file: " << filepath << std::endl;
-        return "";
-    }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-
-    std::cout << "Shader loaded successfully from: " << filepath << std::endl;
-
-    // Optional: print shader source
-    std::cout << "Shader source content:\n" << buffer.str() << std::endl;
-
-    return buffer.str();
-}
