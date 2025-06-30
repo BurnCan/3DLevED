@@ -19,6 +19,7 @@
 #include "editorCamera.h"
 #include "mesh.h"
 #include "ShapeFactory.h"
+#include "map.h"
 
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
@@ -104,6 +105,21 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
+    // Declare and initialize the map object
+    Map map;
+
+    // Add objects to the map
+    map.addObject(Map::MapObject{ "Cube", "Cube", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f) });
+    map.addObject(Map::MapObject{ "Sphere", "Sphere", glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f) });
+
+    // Create corresponding meshes for the map objects
+    map.objects[0].mesh = createCube(1.0f);  // Cube mesh
+    map.objects[1].mesh = createSphere(1.0f, 36, 18);  // Sphere mesh
+    // Create shader program (replace with actual shader code)
+    GLuint shaderProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
+
+
+
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
@@ -147,6 +163,97 @@ int main()
 
         // Draw mesh
         currentMesh.render();
+
+        ImGui::Begin("Map Editor");
+
+        // === Existing Object List ===
+        if (ImGui::CollapsingHeader("Objects in Map")) {
+            for (int i = 0; i < static_cast<int>(map.objects.size()); ) {
+                const auto& obj = map.objects[i];
+
+                ImGui::Text("Object %d: %s", i + 1, obj.name.c_str());
+                ImGui::Text("  Type: %s", obj.type.c_str());
+                ImGui::Text("  Position: %.2f, %.2f, %.2f", obj.position.x, obj.position.y, obj.position.z);
+
+                ImGui::SameLine();
+                std::string deleteLabel = "Delete##" + std::to_string(i);
+                if (ImGui::Button(deleteLabel.c_str())) {
+                    std::cout << "Object " << obj.name << " deleted!" << std::endl;
+                    map.removeObjectByIndex(i);
+                    continue;
+                }
+
+                ImGui::Separator();
+                ++i;
+            }
+        }
+
+        // === Add Object ===
+        static const char* shapeOptions[] = { "Cube", "Sphere" };
+        static int currentShapeIndex = 0;
+        static char objectName[64] = "NewObject";
+
+        // Object creation UI
+        ImGui::Separator();
+        ImGui::Text("Add New Object");
+
+        ImGui::InputText("Name", objectName, IM_ARRAYSIZE(objectName));
+
+        if (ImGui::BeginCombo("Shape Type", shapeOptions[currentShapeIndex])) {
+            for (int n = 0; n < IM_ARRAYSIZE(shapeOptions); n++) {
+                bool isSelected = (currentShapeIndex == n);
+                if (ImGui::Selectable(shapeOptions[n], isSelected)) {
+                    currentShapeIndex = n;
+                }
+                if (isSelected) ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        if (ImGui::Button("Add Object")) {
+            std::string shape = shapeOptions[currentShapeIndex];
+            std::string nameStr = objectName;
+
+            Map::MapObject newObj(nameStr, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+            map.addObject(newObj);
+            std::cout << "Added object: " << nameStr << " of type " << shape << std::endl;
+        }
+
+        // === Save / Load Buttons ===
+        ImGui::Separator();
+
+        if (ImGui::Button("Save Map")) {
+            map.saveToFile("current_map.map");
+            std::cout << "Map saved!" << std::endl;
+        }
+        if (ImGui::Button("Load Map")) {
+            if (map.loadFromFile("current_map.map")) {
+                std::cout << "Map loaded!" << std::endl;
+            }
+            else {
+                std::cout << "Failed to load map!" << std::endl;
+            }
+        }
+
+        ImGui::End();
+
+
+        
+
+        // Render the map objects
+        for (auto& obj : map.objects) {
+            // Set the transformation matrix (model, view, projection)
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), obj.position);
+            glm::mat4 view = camera.getViewMatrix();
+            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
+            glm::mat4 mvp = projection * view * model;
+
+            glUseProgram(shaderProgram);
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+
+            // Render the object using its mesh
+            obj.mesh.render();
+        }
 
         // ImGui Render
         ImGui::Render();
