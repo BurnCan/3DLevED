@@ -49,29 +49,32 @@ if [[ "$OPTION" == "1" ]]; then
   exec "$TEMP_DIR/$SCRIPT_NAME"
 fi
 
-  read -p "Enter the git repository URL (e.g., https://github.com/yourusername/your-repo.git): " REPO_URL
-  REPO_URL=$(echo "$REPO_URL" | xargs)
-  REPO_URL=${REPO_URL:-"https://github.com/yourusername/your-repo.git"}
+# Static repository URL
+REPO_URL="https://github.com/BurnCan/3DLevED"
+REPO_NAME=$(basename -s .git "$REPO_URL")
+TARGET_DIR="$HOME/$REPO_NAME"
 
-  read -p "Enter the branch name to clone (leave blank for default): " BRANCH_NAME
-  BRANCH_NAME=$(echo "$BRANCH_NAME" | xargs)
+echo "[INFO] Using repository: $REPO_URL"
 
-  REPO_NAME=$(basename -s .git "$REPO_URL")
-  TARGET_DIR="$HOME/$REPO_NAME"
-  cd "$HOME"
+# Ask for optional branch name
+read -p "Enter the branch name to clone (leave blank for default): " BRANCH_NAME
+BRANCH_NAME=$(echo "$BRANCH_NAME" | xargs)
 
-  if [ -d "$TARGET_DIR" ]; then
-    echo "[INFO] Removing existing directory $TARGET_DIR"
-    rm -rf "$TARGET_DIR"
-  fi
+# Navigate to home and remove any existing directory
+cd "$HOME"
+if [ -d "$TARGET_DIR" ]; then
+  echo "[INFO] Removing existing directory $TARGET_DIR"
+  rm -rf "$TARGET_DIR"
+fi
 
-  if [[ -n "$BRANCH_NAME" ]]; then
-    echo "[INFO] Cloning $REPO_URL (branch: $BRANCH_NAME)..."
-    git clone --branch "$BRANCH_NAME" --single-branch "$REPO_URL"
-  else
-    echo "[INFO] Cloning $REPO_URL (default branch)..."
-    git clone "$REPO_URL"
-  fi
+# Clone the repo
+if [ -n "$BRANCH_NAME" ]; then
+  echo "[INFO] Cloning branch '$BRANCH_NAME' from $REPO_URL..."
+  git clone --branch "$BRANCH_NAME" --single-branch "$REPO_URL"
+else
+  echo "[INFO] Cloning default branch from $REPO_URL..."
+  git clone "$REPO_URL"
+fi
 
   cd "$TARGET_DIR"
   mkdir -p build && cd build
