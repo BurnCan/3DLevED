@@ -110,3 +110,77 @@ void UI::Shutdown() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
+
+void UI::RenderMapEditor(Map& currentMap) {
+    ImGui::Begin("Map Editor");
+
+    // === Existing Object List ===
+    if (ImGui::CollapsingHeader("Objects in Map")) {
+        for (int i = 0; i < static_cast<int>(currentMap.objects.size()); ) {
+            const auto& obj = currentMap.objects[i];
+
+            ImGui::Text("Object %d: %s", i + 1, obj.name.c_str());
+            ImGui::Text("  Type: %s", obj.type.c_str());
+            ImGui::Text("  Position: %.2f, %.2f, %.2f", obj.position.x, obj.position.y, obj.position.z);
+
+            ImGui::SameLine();
+            std::string deleteLabel = "Delete##" + std::to_string(i);
+            if (ImGui::Button(deleteLabel.c_str())) {
+                std::cout << "Object " << obj.name << " deleted!" << std::endl;
+                currentMap.removeObjectByIndex(i);
+                continue;
+            }
+
+            ImGui::Separator();
+            ++i;
+        }
+    }
+
+    // === Add Object ===
+    static const char* shapeOptions[] = { "Cube", "Sphere" };
+    static int currentShapeIndex = 0;
+    static char objectName[64] = "NewObject";
+
+    ImGui::Separator();
+    ImGui::Text("Add New Object");
+
+    ImGui::InputText("Name", objectName, IM_ARRAYSIZE(objectName));
+
+    if (ImGui::BeginCombo("Shape Type", shapeOptions[currentShapeIndex])) {
+        for (int n = 0; n < IM_ARRAYSIZE(shapeOptions); n++) {
+            bool isSelected = (currentShapeIndex == n);
+            if (ImGui::Selectable(shapeOptions[n], isSelected)) {
+                currentShapeIndex = n;
+            }
+            if (isSelected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    if (ImGui::Button("Add Object")) {
+        std::string shape = shapeOptions[currentShapeIndex];
+        std::string nameStr = objectName;
+
+        Map::MapObject newObj(nameStr, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+        currentMap.addObject(newObj);
+        std::cout << "Added object: " << nameStr << " of type " << shape << std::endl;
+    }
+
+    // === Save / Load Buttons ===
+    ImGui::Separator();
+
+    if (ImGui::Button("Save Map")) {
+        currentMap.saveToFile("current_map.map");
+        std::cout << "Map saved!" << std::endl;
+    }
+    if (ImGui::Button("Load Map")) {
+        if (currentMap.loadFromFile("current_map.map")) {
+            std::cout << "Map loaded!" << std::endl;
+        }
+        else {
+            std::cout << "Failed to load map!" << std::endl;
+        }
+    }
+
+    ImGui::End();
+}
