@@ -32,4 +32,8 @@ public:
 
     bool saveToFile(const std::string& filename) const;
     bool loadFromFile(const std::string& filename);
+
+    bool loadFromTextFile(const std::string& path);
+    bool saveToTextFile(const std::string& path) const;
+    //bool convertTextToBinary(const std::string& txtPath, const std::string& binaryPath);
 };

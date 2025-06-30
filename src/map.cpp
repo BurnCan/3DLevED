@@ -1,10 +1,14 @@
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <filesystem>
 #include "map.h"
-#include "mesh.h"  // If Mesh is involved, include it
+#include "mesh.h"  
+#include "ShapeFactory.h"
+
 
 // Save the map to a file in binary format
 bool Map::saveToFile(const std::string& path) const {
@@ -34,9 +38,8 @@ bool Map::saveToFile(const std::string& path) const {
         out.write(reinterpret_cast<const char*>(&obj.rotation), sizeof(float) * 3);
         out.write(reinterpret_cast<const char*>(&obj.scale), sizeof(float) * 3);
 
-        // Optionally save mesh data (if needed)
-        // You can save mesh file paths or any identifiers, if needed
-        // Example: out.write(obj.mesh.getFilePath().c_str(), obj.mesh.getFilePath().length());
+        
+        
     }
 
     return true;
@@ -50,39 +53,96 @@ bool Map::loadFromFile(const std::string& path) {
         return false;
     }
 
-    // Read the number of objects in the map
     int32_t objectCount = 0;
     in.read(reinterpret_cast<char*>(&objectCount), sizeof(objectCount));
 
     objects.clear();
     for (int i = 0; i < objectCount; ++i) {
-        // Load name length and name
         uint32_t nameLen = 0;
         in.read(reinterpret_cast<char*>(&nameLen), sizeof(nameLen));
-
         std::string name(nameLen, '\0');
         in.read(&name[0], nameLen);
 
-        // Load type length and type
         uint32_t typeLen = 0;
         in.read(reinterpret_cast<char*>(&typeLen), sizeof(typeLen));
-
         std::string type(typeLen, '\0');
         in.read(&type[0], typeLen);
 
-        // Load position, rotation, and scale
         glm::vec3 pos, rot, scale;
         in.read(reinterpret_cast<char*>(&pos), sizeof(float) * 3);
         in.read(reinterpret_cast<char*>(&rot), sizeof(float) * 3);
         in.read(reinterpret_cast<char*>(&scale), sizeof(float) * 3);
 
-        // Optionally load mesh (if needed)
-        // You could load a mesh path/identifier here if you want to load it
-        // std::string meshPath;
-        // in.read(reinterpret_cast<char*>(&meshPath), meshPathLength);
+        MapObject obj{ name, type, pos, rot, scale };
 
-        // Create MapObject with loaded data
-        objects.push_back(MapObject{ name, type, pos, rot, scale });
+        if (type == "Cube") {
+            obj.mesh = createCube(scale.x); // Adjust size
+        }
+        else if (type == "Sphere") {
+            obj.mesh = createSphere(scale.x, 36, 18);
+        }
+        else {
+            std::cerr << "Unknown object type: " << type << std::endl;
+        }
+
+        objects.push_back(obj);
+    }
+
+    return true;
+}
+
+//Loading from text file
+bool Map::saveToTextFile(const std::string& path) const {
+    std::ofstream out(path);
+    if (!out) return false;
+
+    for (const auto& obj : objects) {
+        out << obj.name << " " << obj.type << " "
+            << obj.position.x << " " << obj.position.y << " " << obj.position.z << " "
+            << obj.rotation.x << " " << obj.rotation.y << " " << obj.rotation.z << " "
+            << obj.scale.x << " " << obj.scale.y << " " << obj.scale.z << "\n";
+    }
+    return true;
+}
+
+bool Map::loadFromTextFile(const std::string& path) {
+    std::ifstream in(path);
+    if (!in) {
+        std::cerr << "Failed to open text map file: " << path << std::endl;
+        return false;
+    }
+
+    objects.clear();
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.empty() || line[0] == '#') continue;
+
+        std::istringstream iss(line);
+        std::string name, type;
+        glm::vec3 pos, rot, scale;
+
+        if (!(iss >> name >> type >>
+            pos.x >> pos.y >> pos.z >>
+            rot.x >> rot.y >> rot.z >>
+            scale.x >> scale.y >> scale.z)) {
+            std::cerr << "Invalid map line: " << line << "\n";
+            continue;
+        }
+
+        MapObject obj{ name, type, pos, rot, scale };
+
+        // Rebuild mesh
+        if (type == "Cube") {
+            obj.mesh = createCube(scale.x);
+        }
+        else if (type == "Sphere") {
+            obj.mesh = createSphere(scale.x, 36, 18);
+        }
+        else {
+            std::cerr << "Unknown object type in text map: " << type << "\n";
+        }
+
+        objects.push_back(obj);
     }
 
     return true;

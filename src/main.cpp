@@ -15,11 +15,13 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <filesystem>
 #include "shader_utility.h"
 #include "editorCamera.h"
 #include "mesh.h"
 #include "ShapeFactory.h"
 #include "map.h"
+
 
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
@@ -59,6 +61,7 @@ void renderEditor() {
 
 int main()
 {
+    std::filesystem::create_directories("Maps");
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -106,17 +109,17 @@ int main()
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Declare and initialize the map object
-    Map map;
+    Map currentMap;
 
     // Add objects to the map
-    map.addObject(Map::MapObject{ "Cube", "Cube", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f) });
-    map.addObject(Map::MapObject{ "Sphere", "Sphere", glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f) });
+    //map.addObject(Map::MapObject{ "Cube", "Cube", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f) });
+    //map.addObject(Map::MapObject{ "Sphere", "Sphere", glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f) });
 
     // Create corresponding meshes for the map objects
-    map.objects[0].mesh = createCube(1.0f);  // Cube mesh
-    map.objects[1].mesh = createSphere(1.0f, 36, 18);  // Sphere mesh
+    //map.objects[0].mesh = createCube(1.0f);  // Cube mesh
+    //map.objects[1].mesh = createSphere(1.0f, 36, 18);  // Sphere mesh
     // Create shader program (replace with actual shader code)
-    GLuint shaderProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
+    //GLuint shaderProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
 
 
 
@@ -168,8 +171,8 @@ int main()
 
         // === Existing Object List ===
         if (ImGui::CollapsingHeader("Objects in Map")) {
-            for (int i = 0; i < static_cast<int>(map.objects.size()); ) {
-                const auto& obj = map.objects[i];
+            for (int i = 0; i < static_cast<int>(currentMap.objects.size()); ) {
+                const auto& obj = currentMap.objects[i];
 
                 ImGui::Text("Object %d: %s", i + 1, obj.name.c_str());
                 ImGui::Text("  Type: %s", obj.type.c_str());
@@ -179,7 +182,7 @@ int main()
                 std::string deleteLabel = "Delete##" + std::to_string(i);
                 if (ImGui::Button(deleteLabel.c_str())) {
                     std::cout << "Object " << obj.name << " deleted!" << std::endl;
-                    map.removeObjectByIndex(i);
+                    currentMap.removeObjectByIndex(i);
                     continue;
                 }
 
@@ -215,7 +218,7 @@ int main()
             std::string nameStr = objectName;
 
             Map::MapObject newObj(nameStr, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-            map.addObject(newObj);
+            currentMap.addObject(newObj);
             std::cout << "Added object: " << nameStr << " of type " << shape << std::endl;
         }
 
@@ -223,11 +226,11 @@ int main()
         ImGui::Separator();
 
         if (ImGui::Button("Save Map")) {
-            map.saveToFile("current_map.map");
+            currentMap.saveToFile("current_map.map");
             std::cout << "Map saved!" << std::endl;
         }
         if (ImGui::Button("Load Map")) {
-            if (map.loadFromFile("current_map.map")) {
+            if (currentMap.loadFromFile("current_map.map")) {
                 std::cout << "Map loaded!" << std::endl;
             }
             else {
@@ -241,7 +244,7 @@ int main()
         
 
         // Render the map objects
-        for (auto& obj : map.objects) {
+        for (auto& obj : currentMap.objects) {
             // Set the transformation matrix (model, view, projection)
             glm::mat4 model = glm::translate(glm::mat4(1.0f), obj.position);
             glm::mat4 view = camera.getViewMatrix();
