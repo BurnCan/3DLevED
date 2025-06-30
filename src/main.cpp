@@ -167,6 +167,33 @@ int main()
         // Draw mesh
         currentMesh.render();
 
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Save Map")) {
+                    currentMap.saveToFile("current_map.map");
+                    std::cout << "Map saved!" << std::endl;
+                }
+
+                if (ImGui::MenuItem("Load Map")) {
+                    if (currentMap.loadFromFile("current_map.map")) {
+                        std::cout << "Map loaded!" << std::endl;
+                    }
+                    else {
+                        std::cout << "Failed to load map!" << std::endl;
+                    }
+                }
+
+                if (ImGui::MenuItem("Exit")) {
+                    glfwSetWindowShouldClose(window, GLFW_TRUE);
+                }
+
+                ImGui::EndMenu();
+            }
+
+            // Add more menus if needed
+            ImGui::EndMainMenuBar();
+        }
+
         ImGui::Begin("Map Editor");
 
         // === Existing Object List ===
