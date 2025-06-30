@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <glm/glm.hpp>
-#include "Mesh.h"
+#include "mesh.h"
 
 class Map {
 public:
