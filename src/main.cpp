@@ -21,6 +21,7 @@
 #include "mesh.h"
 #include "ShapeFactory.h"
 #include "map.h"
+#include "UI.h"
 
 
 // Window dimensions
@@ -111,18 +112,8 @@ int main()
     // Declare and initialize the map object
     Map currentMap;
 
-    // Add objects to the map
-    //map.addObject(Map::MapObject{ "Cube", "Cube", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f) });
-    //map.addObject(Map::MapObject{ "Sphere", "Sphere", glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f) });
-
-    // Create corresponding meshes for the map objects
-    //map.objects[0].mesh = createCube(1.0f);  // Cube mesh
-    //map.objects[1].mesh = createSphere(1.0f, 36, 18);  // Sphere mesh
-    // Create shader program (replace with actual shader code)
-    //GLuint shaderProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
-
-
-
+    //UI::Init(window);
+    
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
@@ -163,36 +154,12 @@ int main()
         camera.renderGrid(mvp);
         renderShaderEditor("shaders/", mvp);
         renderEditor();
+        UI::RenderMainMenuBar(currentMap, window);
 
         // Draw mesh
         currentMesh.render();
 
-        if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Save Map")) {
-                    currentMap.saveToFile("current_map.map");
-                    std::cout << "Map saved!" << std::endl;
-                }
-
-                if (ImGui::MenuItem("Load Map")) {
-                    if (currentMap.loadFromFile("current_map.map")) {
-                        std::cout << "Map loaded!" << std::endl;
-                    }
-                    else {
-                        std::cout << "Failed to load map!" << std::endl;
-                    }
-                }
-
-                if (ImGui::MenuItem("Exit")) {
-                    glfwSetWindowShouldClose(window, GLFW_TRUE);
-                }
-
-                ImGui::EndMenu();
-            }
-
-            // Add more menus if needed
-            ImGui::EndMainMenuBar();
-        }
+        
 
         ImGui::Begin("Map Editor");
 
