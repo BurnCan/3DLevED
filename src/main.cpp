@@ -152,10 +152,11 @@ int main()
         // ImGui UI
         camera.renderDebugWindow();
         camera.renderGrid(mvp);
-        renderShaderEditor("shaders/", mvp);
+        //renderShaderEditor("shaders/", mvp);
         renderEditor();
         UI::RenderMainMenuBar(currentMap, window);
         UI::RenderMapEditor(currentMap);
+        UI::RenderShaderUtility(mvp);
 
         // Draw mesh
         currentMesh.render();
