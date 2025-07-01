@@ -29,11 +29,13 @@ public:
     //  These should belong to Map, not MapObject:
     void removeObjectByName(const std::string& objectName);
     void removeObjectByIndex(size_t index);
-
-    bool saveToBinaryFile(const std::string& filename) const;
-    bool loadFromBinaryFile(const std::string& filename);
-
-    bool loadFromTextFile(const std::string& path);
-    bool saveToTextFile(const std::string& path) const;
+    void clear();
     //bool convertTextToBinary(const std::string& txtPath, const std::string& binaryPath);
+    [[nodiscard]] bool saveToBinaryFile(const std::string& filename) const;
+    [[nodiscard]] bool loadFromBinaryFile(const std::string& filename);
+    [[nodiscard]] bool saveToTextFile(const std::string& path) const;
+    [[nodiscard]] bool loadFromTextFile(const std::string& path);
+
 };
+    
+

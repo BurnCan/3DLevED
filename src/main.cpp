@@ -46,18 +46,18 @@ bool firstMouse = true;
 Mesh currentMesh;
 
 // ImGui shape selection
-void renderEditor() {
-    ImGui::Begin("Mesh Editor");
+//void renderEditor() {
+    //ImGui::Begin("Mesh Editor");
 
-    if (ImGui::Button("Create Cube")) {
-        currentMesh = createCube(1.0f);
-    }
-    if (ImGui::Button("Create Sphere")) {
-        currentMesh = createSphere(1.0f, 36, 18);
-    }
+    //if (ImGui::Button("Create Cube")) {
+        //currentMesh = createCube(1.0f);
+    //}
+    //if (ImGui::Button("Create Sphere")) {
+        //currentMesh = createSphere(1.0f, 36, 18);
+    //}
 
-    ImGui::End();
-}
+    //ImGui::End();
+//}
 
 int main()
 {
@@ -108,10 +108,10 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    // Declare and initialize the map object
-    Map currentMap;
-
     
+
+    // Declare and initialize the map object
+    //Map currentMap;
     
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -150,11 +150,12 @@ int main()
 
         // ImGui UI
         //camera.renderDebugWindow();
-        UI::RenderMainMenuBar(currentMap, window);
-        UI::RenderMapEditor(currentMap);
+        Map& mapBuffer = UI::GetMapBuffer();
+        UI::RenderMainMenuBar(mapBuffer, window);
+        UI::RenderMapEditor(mapBuffer);
         camera.renderGrid(mvp);
         //renderShaderEditor("shaders/", mvp);
-        renderEditor();
+        //renderEditor();
         
         
         UI::RenderShaderUtility(mvp);
@@ -171,7 +172,7 @@ int main()
         
 
         // Render the map objects
-        for (auto& obj : currentMap.objects) {
+        for (auto& obj : UI::GetMapBuffer().objects) {
             // Set the transformation matrix (model, view, projection)
             glm::mat4 model = glm::translate(glm::mat4(1.0f), obj.position);
             glm::mat4 view = camera.getViewMatrix();

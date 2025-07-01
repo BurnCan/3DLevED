@@ -1,5 +1,6 @@
 #include "UI.h"
 #include "map.h"
+#include "mesh.h"
 #include "shader_utility.h"
 #include "editorCamera.h"  // Needed for access to camera state flags
 #include "imgui.h"
@@ -10,17 +11,42 @@
 #include <string>
 #include <GLFW/glfw3.h>
 
-static char mapFilename[128] = "current_map.map";
+static char mapFilename[128] = "default.txt";
 static bool showSavePopup = false;
 static bool showLoadPopup = false;
+static Map mapBuffer;
+//Tracks loaded map filename
+static std::string loadedMapFilename = "";
 
-void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
+Map& UI::GetMapBuffer() {
+    return mapBuffer;
+}
+
+void UI::RenderMainMenuBar(Map& mapBuffer, GLFWwindow* window) {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
 
             if (ImGui::MenuItem("Save Map")) {
-                currentMap.saveToBinaryFile("Maps/current_map.map");
-                std::cout << "Map saved!\n";
+                if (!loadedMapFilename.empty()) {
+                    std::filesystem::path path(loadedMapFilename);
+                    bool success = false;
+                    if (path.extension() == ".txt") {
+                        success = mapBuffer.saveToTextFile(loadedMapFilename);
+                    }
+                    else {
+                        success = mapBuffer.saveToBinaryFile(loadedMapFilename);
+                    }
+
+                    if (success) {
+                        std::cout << "Map saved to: " << loadedMapFilename << "\n";
+                    }
+                    else {
+                        std::cerr << "Failed to save map to: " << loadedMapFilename << "\n";
+                    }
+                }
+                else {
+                    showSavePopup = true;
+                }
             }
 
             if (ImGui::MenuItem("Save As...")) {
@@ -28,11 +54,14 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
             }
 
             if (ImGui::MenuItem("Load Map")) {
-                if (currentMap.loadFromBinaryFile("Maps/current_map.map")) {
-                    std::cout << "Map loaded!\n";
+                std::string path = "Maps/default.txt";
+                mapBuffer.clear();  //  Clear buffer before loading
+                if (mapBuffer.loadFromBinaryFile(path)) {
+                    loadedMapFilename = path;
+                    std::cout << "Map loaded from: " << path << "\n";
                 }
                 else {
-                    std::cerr << "Failed to load map!\n";
+                    std::cerr << "Failed to load map from: " << path << "\n";
                 }
             }
 
@@ -69,15 +98,24 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
             std::string filenameStr = std::string(mapFilename);
             std::string fullPath = "Maps/" + filenameStr;
 
-
             if (std::filesystem::path(filenameStr).extension() == ".txt") {
-                currentMap.saveToTextFile(fullPath);
-                std::cout << "Map saved as text to: " << fullPath << std::endl;
+                if (mapBuffer.saveToTextFile(fullPath)) {
+                    std::cout << "Map saved as text to: " << fullPath << std::endl;
+                }
+                else {
+                    std::cerr << "Failed to save text map to: " << fullPath << std::endl;
+                }
             }
             else {
-                currentMap.saveToBinaryFile(fullPath);
-                std::cout << "Map saved to: " << fullPath << std::endl;
+                if (mapBuffer.saveToBinaryFile(fullPath)) {
+                    std::cout << "Map saved to: " << fullPath << std::endl;
+                }
+                else {
+                    std::cerr << "Failed to save binary map to: " << fullPath << std::endl;
+                }
             }
+
+            loadedMapFilename = fullPath;
 
             ImGui::CloseCurrentPopup();
         }
@@ -97,23 +135,24 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
 
         if (ImGui::Button("Load", ImVec2(120, 0))) {
             std::string filenameStr = std::string(mapFilename);
-            std::string fullPath = "Maps/" + std::string(mapFilename);
+            std::string fullPath = "Maps/" + filenameStr;
+
+            mapBuffer.clear();  //  Clear buffer BEFORE loading
+
             bool success = false;
-
-
             if (std::filesystem::path(filenameStr).extension() == ".txt") {
-
-                success = currentMap.loadFromTextFile(fullPath);
+                success = mapBuffer.loadFromTextFile(fullPath);
             }
             else {
-                success = currentMap.loadFromBinaryFile(fullPath);
+                success = mapBuffer.loadFromBinaryFile(fullPath);
             }
 
             if (success) {
+                loadedMapFilename = fullPath;
                 std::cout << "Map loaded from: " << fullPath << std::endl;
             }
             else {
-                std::cerr << "Failed to load map: " << fullPath << std::endl;
+                std::cerr << "Failed to load map from: " << fullPath << std::endl;
             }
 
             ImGui::CloseCurrentPopup();
@@ -137,13 +176,16 @@ void UI::RenderCameraDebugWindow() {
     ImGui::End();
 }
 
-void UI::RenderMapEditor(Map& currentMap) {
-    ImGui::Begin("Map Editor");
+void UI::RenderMapEditor(Map& mapBuffer) {
+    std::string windowTitle = "Map Editor - [";
+    windowTitle += loadedMapFilename.empty() ? "No Map Loaded" : loadedMapFilename;
+    windowTitle += "]";
+    ImGui::Begin(windowTitle.c_str());
 
     // === Existing Object List ===
     if (ImGui::CollapsingHeader("Objects in Map")) {
-        for (int i = 0; i < static_cast<int>(currentMap.objects.size()); ) {
-            const auto& obj = currentMap.objects[i];
+        for (int i = 0; i < static_cast<int>(mapBuffer.objects.size()); ) {
+            const auto& obj = mapBuffer.objects[i];
 
             ImGui::Text("Object %d: %s", i + 1, obj.name.c_str());
             ImGui::Text("  Type: %s", obj.type.c_str());
@@ -153,7 +195,7 @@ void UI::RenderMapEditor(Map& currentMap) {
             std::string deleteLabel = "Delete##" + std::to_string(i);
             if (ImGui::Button(deleteLabel.c_str())) {
                 std::cout << "Object " << obj.name << " deleted!" << std::endl;
-                currentMap.removeObjectByIndex(i);
+                mapBuffer.removeObjectByIndex(i);
                 continue;
             }
 
@@ -188,7 +230,8 @@ void UI::RenderMapEditor(Map& currentMap) {
         std::string nameStr = objectName;
 
         Map::MapObject newObj(nameStr, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-        currentMap.addObject(newObj);
+        newObj.mesh = generateMeshForType(shape, 1.0f);
+        mapBuffer.addObject(newObj);
         std::cout << "Added object: " << nameStr << " of type " << shape << std::endl;
     }
 
@@ -196,11 +239,30 @@ void UI::RenderMapEditor(Map& currentMap) {
     ImGui::Separator();
 
     if (ImGui::Button("Save Map")) {
-        currentMap.saveToBinaryFile("current_map.map");
-        std::cout << "Map saved!" << std::endl;
+        if (!loadedMapFilename.empty()) {
+            std::filesystem::path path(loadedMapFilename);
+            if (path.extension() == ".txt") {
+                if (!mapBuffer.saveToTextFile(loadedMapFilename)) {
+                    std::cerr << "Failed to save map to: " << loadedMapFilename << std::endl;
+                }
+            }
+            else {
+                if (!mapBuffer.saveToBinaryFile(loadedMapFilename)) {
+                    std::cerr << "Failed to save map to: " << loadedMapFilename << std::endl;
+                }
+            }
+            std::cout << "Map saved to: " << loadedMapFilename << std::endl;
+        }
+        else {
+            showSavePopup = true;  // No file loaded — show Save As popup
+        }
     }
+
     if (ImGui::Button("Load Map")) {
-        if (currentMap.loadFromBinaryFile("current_map.map")) {
+        std::string path = "Maps/default.txt";
+        mapBuffer.clear();  //  Ensure clean state
+        if (mapBuffer.loadFromBinaryFile(path)) {
+            loadedMapFilename = path;
             std::cout << "Map loaded!" << std::endl;
         }
         else {

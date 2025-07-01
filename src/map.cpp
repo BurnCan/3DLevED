@@ -76,15 +76,7 @@ bool Map::loadFromBinaryFile(const std::string& path) {
 
         MapObject obj{ name, type, pos, rot, scale };
 
-        if (type == "Cube") {
-            obj.mesh = createCube(scale.x); // Adjust size
-        }
-        else if (type == "Sphere") {
-            obj.mesh = createSphere(scale.x, 36, 18);
-        }
-        else {
-            std::cerr << "Unknown object type: " << type << std::endl;
-        }
+        obj.mesh = generateMeshForType(type, scale.x);
 
         objects.push_back(obj);
     }
@@ -139,15 +131,7 @@ bool Map::loadFromTextFile(const std::string& path) {
         MapObject obj{ name, type, pos, rot, scale };
 
         // Rebuild mesh
-        if (type == "Cube") {
-            obj.mesh = createCube(scale.x);
-        }
-        else if (type == "Sphere") {
-            obj.mesh = createSphere(scale.x, 36, 18);
-        }
-        else {
-            std::cerr << "Unknown object type in text map: " << type << "\n";
-        }
+        obj.mesh = generateMeshForType(type, scale.x);
 
         objects.push_back(obj);
     }
@@ -167,4 +151,9 @@ void Map::removeObjectByIndex(size_t index) {
     if (index < objects.size()) {
         objects.erase(objects.begin() + index);
     }
+}
+
+//Clear the map buffer
+void Map::clear() {
+    objects.clear();
 }
