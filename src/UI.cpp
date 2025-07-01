@@ -60,15 +60,24 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
         showLoadPopup = false;
     }
 
-    //  Save Modal
+    // Save Modal
     if (ImGui::BeginPopupModal("Save Map File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Enter map filename (saved in Maps/):");
         ImGui::InputText("##SaveMapFilename", mapFilename, IM_ARRAYSIZE(mapFilename));
 
         if (ImGui::Button("Save", ImVec2(120, 0))) {
-            std::string fullPath = "Maps/" + std::string(mapFilename);
-            currentMap.saveToFile(fullPath);
-            std::cout << "Map saved to: " << fullPath << std::endl;
+            std::string filenameStr = std::string(mapFilename);
+            std::string fullPath = "Maps/" + filenameStr;
+
+            if (std::filesystem::path(filenameStr).extension() == ".txt") {
+                currentMap.saveToTextFile(fullPath);
+                std::cout << "Map saved as text to: " << fullPath << std::endl;
+            }
+            else {
+                currentMap.saveToFile(fullPath);
+                std::cout << "Map saved to: " << fullPath << std::endl;
+            }
+
             ImGui::CloseCurrentPopup();
         }
 
