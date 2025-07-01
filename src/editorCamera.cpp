@@ -2,11 +2,15 @@
 #include "editorCamera.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <iostream>
 #include <algorithm>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include "shader_utility.h"  // For createShaderProgramFromFile
+
+
+EditorCamera camera;
+
 
 EditorCamera::EditorCamera(float yaw, float pitch, float distance)
     : yaw(yaw), pitch(pitch), distance(distance), target(0.0f), up(0.0f, 1.0f, 0.0f)
@@ -117,15 +121,7 @@ glm::vec3 EditorCamera::getTarget() const {
 
 
 
-//Camera debug window
-void EditorCamera::renderDebugWindow() {
-    ImGui::Begin("Camera Debug");
-    ImGui::Checkbox("Invert processMouseMovement Pitch", &invertPitch);
-    ImGui::Checkbox("Use Camera Light", &useCameraLight);
-    ImGui::Checkbox("Show Grid", &showGrid);
 
-    ImGui::End();
-}
 
 static bool isDragging = false;
 static float lastX = 0.0f;
@@ -169,7 +165,13 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 }
 
 void EditorCamera::renderGrid(const glm::mat4& mvp) {
-    if (!showGrid) return;
+    if (!showGrid) {
+        //std::cout << "[Grid] Not rendering: showGrid is false\n";
+        return;
+    }
+
+    //std::cout << "[Grid] Rendering\n";
+
     initGrid();
 
     GLint currentProgram = 0;

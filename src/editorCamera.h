@@ -6,11 +6,11 @@
 #include <GLFW/glfw3.h>
 
 
-
-
 class EditorCamera {
 public:
+    bool invertPitch = true;
     bool useCameraLight = true;
+    bool showGrid = true;
     glm::vec3 getFront() const;
     float getYaw() const { return yaw; }
     float getPitch() const { return pitch; }
@@ -34,10 +34,10 @@ public:
     void renderGrid(const glm::mat4& mvp); 
     
 
-    bool invertPitch = true; 
+
+
 
 private:
-    bool showGrid = true;                  
     bool gridInitialized = false;
     GLuint gridVAO = 0, gridVBO = 0, gridShader = 0;
     std::vector<float> gridVertices;
@@ -57,7 +57,9 @@ private:
     void updateCameraVectors();
 };
 
+// Global instances and flags
 extern EditorCamera camera;
+
 
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);

@@ -38,7 +38,6 @@ std::string loadShaderSource(const char* filepath);
 // Camera and input
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-EditorCamera camera;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -150,13 +149,15 @@ int main()
         glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.3f)));
 
         // ImGui UI
-        camera.renderDebugWindow();
+        //camera.renderDebugWindow();
+
         camera.renderGrid(mvp);
         //renderShaderEditor("shaders/", mvp);
         renderEditor();
         UI::RenderMainMenuBar(currentMap, window);
         UI::RenderMapEditor(currentMap);
         UI::RenderShaderUtility(mvp);
+        UI::RenderCameraDebugWindow();
 
         // Draw mesh
         currentMesh.render();

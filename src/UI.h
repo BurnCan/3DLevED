@@ -12,5 +12,6 @@ namespace UI {
     void RenderMainMenuBar(Map& currentMap, GLFWwindow* window);
     void RenderMapEditor(Map& currentMap);
     void RenderShaderUtility(const glm::mat4& mvp);
+    void RenderCameraDebugWindow();
     void Shutdown();
 }

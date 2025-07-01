@@ -1,7 +1,7 @@
 #include "UI.h"
 #include "map.h"
 #include "shader_utility.h"
-
+#include "editorCamera.h"  // Needed for access to camera state flags
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -15,6 +15,14 @@ static bool showSavePopup = false;
 static bool showLoadPopup = false;
 
 
+//Camera debug window
+void UI::RenderCameraDebugWindow() {
+    ImGui::Begin("Camera Debug");
+    ImGui::Checkbox("Invert Pitch", &camera.invertPitch);
+    ImGui::Checkbox("Use Camera Light", &camera.useCameraLight);
+    ImGui::Checkbox("Show Grid", &camera.showGrid);
+    ImGui::End();
+}
 
 void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
     if (ImGui::BeginMainMenuBar()) {
