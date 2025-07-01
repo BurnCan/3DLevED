@@ -14,6 +14,96 @@ static char mapFilename[128] = "current_map.map";
 static bool showSavePopup = false;
 static bool showLoadPopup = false;
 
+void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+
+            if (ImGui::MenuItem("Save Map")) {
+                currentMap.saveToFile("Maps/current_map.map");
+                std::cout << "Map saved!\n";
+            }
+
+            if (ImGui::MenuItem("Save As...")) {
+                showSavePopup = true;
+            }
+
+            if (ImGui::MenuItem("Load Map")) {
+                if (currentMap.loadFromFile("Maps/current_map.map")) {
+                    std::cout << "Map loaded!\n";
+                }
+                else {
+                    std::cerr << "Failed to load map!\n";
+                }
+            }
+
+            if (ImGui::MenuItem("Load From...")) {
+                showLoadPopup = true;
+            }
+
+            if (ImGui::MenuItem("Exit")) {
+                glfwSetWindowShouldClose(window, GLFW_TRUE);
+            }
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    //  Must call OpenPopup outside of menu block
+    if (showSavePopup) {
+        ImGui::OpenPopup("Save Map File");
+        showSavePopup = false;
+    }
+
+    if (showLoadPopup) {
+        ImGui::OpenPopup("Load Map File");
+        showLoadPopup = false;
+    }
+
+    //  Save Modal
+    if (ImGui::BeginPopupModal("Save Map File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter map filename (saved in Maps/):");
+        ImGui::InputText("##SaveMapFilename", mapFilename, IM_ARRAYSIZE(mapFilename));
+
+        if (ImGui::Button("Save", ImVec2(120, 0))) {
+            std::string fullPath = "Maps/" + std::string(mapFilename);
+            currentMap.saveToFile(fullPath);
+            std::cout << "Map saved to: " << fullPath << std::endl;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    //  Load Modal
+    if (ImGui::BeginPopupModal("Load Map File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter map filename (from Maps/):");
+        ImGui::InputText("##LoadMapFilename", mapFilename, IM_ARRAYSIZE(mapFilename));
+
+        if (ImGui::Button("Load", ImVec2(120, 0))) {
+            std::string fullPath = "Maps/" + std::string(mapFilename);
+            if (currentMap.loadFromFile(fullPath)) {
+                std::cout << "Map loaded from: " << fullPath << std::endl;
+            }
+            else {
+                std::cerr << "Failed to load map: " << fullPath << std::endl;
+            }
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
 
 //Camera debug window
 void UI::RenderCameraDebugWindow() {
@@ -23,92 +113,6 @@ void UI::RenderCameraDebugWindow() {
     ImGui::Checkbox("Show Grid", &camera.showGrid);
     ImGui::End();
 }
-
-void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
-    if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Save Map")) {
-                currentMap.saveToFile("Maps/current_map.map");
-                std::cout << "Map saved!\n";
-            }
-
-            if (ImGui::MenuItem("Save As...")) {
-                showSavePopup = true;
-                ImGui::OpenPopup("Save Map File");
-            }
-
-            if (ImGui::MenuItem("Load Map")) {
-                if (currentMap.loadFromFile("Maps/current_map.map")) {
-                    std::cout << "Map loaded!\n";
-                } else {
-                    std::cout << "Failed to load map!\n";
-                }
-            }
-
-            if (ImGui::MenuItem("Load From...")) {
-                showLoadPopup = true;
-                ImGui::OpenPopup("Load Map File");
-            }
-
-            if (ImGui::MenuItem("Exit")) {
-                glfwSetWindowShouldClose(window, GLFW_TRUE);
-            }
-
-            ImGui::EndMenu();
-        }
-
-        ImGui::EndMainMenuBar();
-    }
-
-    // Save As popup
-    if (showSavePopup && ImGui::BeginPopupModal("Save Map File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Enter map filename (saved in Maps/):");
-        ImGui::InputText("##SaveMapFilename", mapFilename, IM_ARRAYSIZE(mapFilename));
-
-        if (ImGui::Button("Save", ImVec2(120, 0))) {
-            std::string fullPath = "Maps/" + std::string(mapFilename);
-            currentMap.saveToFile(fullPath);
-            std::cout << "Map saved to: " << fullPath << std::endl;
-            ImGui::CloseCurrentPopup();
-            showSavePopup = false;
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-            ImGui::CloseCurrentPopup();
-            showSavePopup = false;
-        }
-
-        ImGui::EndPopup();
-    }
-
-    // Load From popup
-    if (showLoadPopup && ImGui::BeginPopupModal("Load Map File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Enter map filename (from Maps/):");
-        ImGui::InputText("##LoadMapFilename", mapFilename, IM_ARRAYSIZE(mapFilename));
-
-        if (ImGui::Button("Load", ImVec2(120, 0))) {
-            std::string fullPath = "Maps/" + std::string(mapFilename);
-            if (currentMap.loadFromFile(fullPath)) {
-                std::cout << "Map loaded from: " << fullPath << std::endl;
-            } else {
-                std::cerr << "Failed to load map: " << fullPath << std::endl;
-            }
-            ImGui::CloseCurrentPopup();
-            showLoadPopup = false;
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-            ImGui::CloseCurrentPopup();
-            showLoadPopup = false;
-        }
-
-        ImGui::EndPopup();
-    }
-}
-
-
 
 void UI::RenderMapEditor(Map& currentMap) {
     ImGui::Begin("Map Editor");

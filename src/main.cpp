@@ -150,12 +150,13 @@ int main()
 
         // ImGui UI
         //camera.renderDebugWindow();
-
+        UI::RenderMainMenuBar(currentMap, window);
+        UI::RenderMapEditor(currentMap);
         camera.renderGrid(mvp);
         //renderShaderEditor("shaders/", mvp);
         renderEditor();
-        UI::RenderMainMenuBar(currentMap, window);
-        UI::RenderMapEditor(currentMap);
+        
+        
         UI::RenderShaderUtility(mvp);
         UI::RenderCameraDebugWindow();
 
