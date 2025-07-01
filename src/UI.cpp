@@ -69,6 +69,7 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
             std::string filenameStr = std::string(mapFilename);
             std::string fullPath = "Maps/" + filenameStr;
 
+
             if (std::filesystem::path(filenameStr).extension() == ".txt") {
                 currentMap.saveToTextFile(fullPath);
                 std::cout << "Map saved as text to: " << fullPath << std::endl;
@@ -95,13 +96,26 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
         ImGui::InputText("##LoadMapFilename", mapFilename, IM_ARRAYSIZE(mapFilename));
 
         if (ImGui::Button("Load", ImVec2(120, 0))) {
+            std::string filenameStr = std::string(mapFilename);
             std::string fullPath = "Maps/" + std::string(mapFilename);
-            if (currentMap.loadFromFile(fullPath)) {
+            bool success = false;
+
+
+            if (std::filesystem::path(filenameStr).extension() == ".txt") {
+
+                success = currentMap.loadFromTextFile(fullPath);
+            }
+            else {
+                success = currentMap.loadFromFile(fullPath);
+            }
+
+            if (success) {
                 std::cout << "Map loaded from: " << fullPath << std::endl;
             }
             else {
                 std::cerr << "Failed to load map: " << fullPath << std::endl;
             }
+
             ImGui::CloseCurrentPopup();
         }
 
@@ -112,8 +126,8 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
 
         ImGui::EndPopup();
     }
-}
 
+}
 //Camera debug window
 void UI::RenderCameraDebugWindow() {
     ImGui::Begin("Camera Debug");

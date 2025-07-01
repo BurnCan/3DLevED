@@ -91,20 +91,26 @@ bool Map::loadFromFile(const std::string& path) {
     return true;
 }
 
-//Loading from text file
+//Saving to text file
 bool Map::saveToTextFile(const std::string& path) const {
     std::ofstream out(path);
-    if (!out) return false;
+    if (!out) {
+        std::cerr << "Failed to open map file for writing: " << path << std::endl;
+        return false;
+    }
 
     for (const auto& obj : objects) {
+        // Save all fields in one line, space-separated
+        // NOTE: Ensure `name` and `type` do not contain spaces (or quote them if needed)
         out << obj.name << " " << obj.type << " "
             << obj.position.x << " " << obj.position.y << " " << obj.position.z << " "
             << obj.rotation.x << " " << obj.rotation.y << " " << obj.rotation.z << " "
             << obj.scale.x << " " << obj.scale.y << " " << obj.scale.z << "\n";
     }
+
     return true;
 }
-
+//Loading from text file
 bool Map::loadFromTextFile(const std::string& path) {
     std::ifstream in(path);
     if (!in) {
