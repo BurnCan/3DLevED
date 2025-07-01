@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <filesystem>
+#include <iomanip>
 #include "map.h"
 #include "mesh.h"  
 #include "ShapeFactory.h"
@@ -100,9 +101,8 @@ bool Map::saveToTextFile(const std::string& path) const {
     }
 
     for (const auto& obj : objects) {
-        // Save all fields in one line, space-separated
-        // NOTE: Ensure `name` and `type` do not contain spaces (or quote them if needed)
-        out << obj.name << " " << obj.type << " "
+        out << std::quoted(obj.name) << " "
+            << std::quoted(obj.type) << " "
             << obj.position.x << " " << obj.position.y << " " << obj.position.z << " "
             << obj.rotation.x << " " << obj.rotation.y << " " << obj.rotation.z << " "
             << obj.scale.x << " " << obj.scale.y << " " << obj.scale.z << "\n";
@@ -110,6 +110,7 @@ bool Map::saveToTextFile(const std::string& path) const {
 
     return true;
 }
+
 //Loading from text file
 bool Map::loadFromTextFile(const std::string& path) {
     std::ifstream in(path);
@@ -127,7 +128,7 @@ bool Map::loadFromTextFile(const std::string& path) {
         std::string name, type;
         glm::vec3 pos, rot, scale;
 
-        if (!(iss >> name >> type >>
+        if (!(iss >> std::quoted(name) >> std::quoted(type) >>
             pos.x >> pos.y >> pos.z >>
             rot.x >> rot.y >> rot.z >>
             scale.x >> scale.y >> scale.z)) {
