@@ -19,7 +19,7 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
         if (ImGui::BeginMenu("File")) {
 
             if (ImGui::MenuItem("Save Map")) {
-                currentMap.saveToFile("Maps/current_map.map");
+                currentMap.saveToBinaryFile("Maps/current_map.map");
                 std::cout << "Map saved!\n";
             }
 
@@ -28,7 +28,7 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
             }
 
             if (ImGui::MenuItem("Load Map")) {
-                if (currentMap.loadFromFile("Maps/current_map.map")) {
+                if (currentMap.loadFromBinaryFile("Maps/current_map.map")) {
                     std::cout << "Map loaded!\n";
                 }
                 else {
@@ -75,7 +75,7 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
                 std::cout << "Map saved as text to: " << fullPath << std::endl;
             }
             else {
-                currentMap.saveToFile(fullPath);
+                currentMap.saveToBinaryFile(fullPath);
                 std::cout << "Map saved to: " << fullPath << std::endl;
             }
 
@@ -106,7 +106,7 @@ void UI::RenderMainMenuBar(Map& currentMap, GLFWwindow* window) {
                 success = currentMap.loadFromTextFile(fullPath);
             }
             else {
-                success = currentMap.loadFromFile(fullPath);
+                success = currentMap.loadFromBinaryFile(fullPath);
             }
 
             if (success) {
@@ -196,11 +196,11 @@ void UI::RenderMapEditor(Map& currentMap) {
     ImGui::Separator();
 
     if (ImGui::Button("Save Map")) {
-        currentMap.saveToFile("current_map.map");
+        currentMap.saveToBinaryFile("current_map.map");
         std::cout << "Map saved!" << std::endl;
     }
     if (ImGui::Button("Load Map")) {
-        if (currentMap.loadFromFile("current_map.map")) {
+        if (currentMap.loadFromBinaryFile("current_map.map")) {
             std::cout << "Map loaded!" << std::endl;
         }
         else {

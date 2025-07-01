@@ -30,8 +30,8 @@ public:
     void removeObjectByName(const std::string& objectName);
     void removeObjectByIndex(size_t index);
 
-    bool saveToFile(const std::string& filename) const;
-    bool loadFromFile(const std::string& filename);
+    bool saveToBinaryFile(const std::string& filename) const;
+    bool loadFromBinaryFile(const std::string& filename);
 
     bool loadFromTextFile(const std::string& path);
     bool saveToTextFile(const std::string& path) const;

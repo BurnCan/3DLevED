@@ -11,7 +11,7 @@
 
 
 // Save the map to a file in binary format
-bool Map::saveToFile(const std::string& path) const {
+bool Map::saveToBinaryFile(const std::string& path) const {
     std::ofstream out(path, std::ios::binary);
     if (!out) {
         std::cerr << "Failed to open file for writing: " << path << std::endl;
@@ -46,7 +46,7 @@ bool Map::saveToFile(const std::string& path) const {
 }
 
 // Load the map from a file in binary format
-bool Map::loadFromFile(const std::string& path) {
+bool Map::loadFromBinaryFile(const std::string& path) {
     std::ifstream in(path, std::ios::binary);
     if (!in) {
         std::cerr << "Failed to open file for reading: " << path << std::endl;
