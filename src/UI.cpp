@@ -178,12 +178,18 @@ void UI::RenderMapEditor(Map& mapBuffer) {
 
         auto& obj = mapBuffer.objects[i];  // Editable reference
 
-        ImGui::Text("Object %d: %s", i + 1, obj.name.c_str());
-        ImGui::Text("  Type: %s", obj.type.c_str());
+        char nameBuffer[64];
+        strncpy(nameBuffer, obj.name.c_str(), sizeof(nameBuffer));
+        nameBuffer[sizeof(nameBuffer) - 1] = '\0';  // Ensure null-terminated
 
+        if (ImGui::InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer))) {
+            obj.name = std::string(nameBuffer);
+        }
+
+        ImGui::Text("  Type: %s", obj.type.c_str());
         ImGui::DragFloat3("Position", &obj.position.x, 0.1f);
         ImGui::DragFloat3("Rotation", &obj.rotation.x, 1.0f);  // Degrees
-        ImGui::DragFloat3("Scale",    &obj.scale.x,    0.1f);  // Uniform or non-uniform scaling
+        ImGui::DragFloat3("Scale",    &obj.scale.x,    0.1f);
 
         ImGui::SameLine();
         std::string deleteLabel = "Delete##" + std::to_string(i);
@@ -195,8 +201,8 @@ void UI::RenderMapEditor(Map& mapBuffer) {
         }
 
         ImGui::Separator();
-        ImGui::PopID();
         ++i;
+        ImGui::PopID();
     }
 }
 
