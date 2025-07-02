@@ -172,27 +172,32 @@ void UI::RenderMapEditor(Map& mapBuffer) {
     windowTitle += "]";
     ImGui::Begin(windowTitle.c_str());
 
-    // === Existing Object List ===
     if (ImGui::CollapsingHeader("Objects in Map")) {
-        for (int i = 0; i < static_cast<int>(mapBuffer.objects.size()); ) {
-            const auto& obj = mapBuffer.objects[i];
+    for (int i = 0; i < static_cast<int>(mapBuffer.objects.size()); ) {
+        ImGui::PushID(i);  // Ensure unique ImGui ID for each object
 
-            ImGui::Text("Object %d: %s", i + 1, obj.name.c_str());
-            ImGui::Text("  Type: %s", obj.type.c_str());
-            ImGui::Text("  Position: %.2f, %.2f, %.2f", obj.position.x, obj.position.y, obj.position.z);
+        auto& obj = mapBuffer.objects[i];  // Note: now non-const so we can modify it
 
-            ImGui::SameLine();
-            std::string deleteLabel = "Delete##" + std::to_string(i);
-            if (ImGui::Button(deleteLabel.c_str())) {
-                std::cout << "Object " << obj.name << " deleted!" << std::endl;
-                mapBuffer.removeObjectByIndex(i);
-                continue;
-            }
+        ImGui::Text("Object %d: %s", i + 1, obj.name.c_str());
+        ImGui::Text("  Type: %s", obj.type.c_str());
 
-            ImGui::Separator();
-            ++i;
+        ImGui::DragFloat3("Position", &obj.position.x, 0.1f);
+
+        ImGui::SameLine();
+        std::string deleteLabel = "Delete##" + std::to_string(i);
+        if (ImGui::Button(deleteLabel.c_str())) {
+            std::cout << "Object " << obj.name << " deleted!" << std::endl;
+            mapBuffer.removeObjectByIndex(i);
+            ImGui::PopID();
+            continue;
         }
+
+        ImGui::Separator();
+        ImGui::PopID();
+        ++i;
     }
+}
+
 
     // === Add Object ===
     static const char* shapeOptions[] = { "Cube", "Sphere" };
