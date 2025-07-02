@@ -225,12 +225,29 @@ void UI::RenderMapEditor(Map& mapBuffer) {
 
     if (ImGui::Button("Add Object")) {
         std::string shape = shapeOptions[currentShapeIndex];
-        std::string nameStr = objectName;
+        std::string baseName = objectName;
+        std::string finalName = baseName;
 
-        Map::MapObject newObj(nameStr, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-        newObj.mesh = generateMeshForType(shape, 1.0f);
-        mapBuffer.addObject(newObj);
-        std::cout << "Added object: " << nameStr << " of type " << shape << std::endl;
+        // Ensure uniqueness
+        int suffix = 1;
+        bool nameExists = true;
+        while (nameExists) {
+            nameExists = false;
+            for (const auto& obj : mapBuffer.objects) {
+                if (obj.name == finalName) {
+                    nameExists = true;
+                    finalName = baseName + "(" + std::to_string(suffix++) + ")";
+                    break;
+                }
+            }
+        }
+
+// Create and add the new object
+Map::MapObject newObj(finalName, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+newObj.mesh = generateMeshForType(shape, 1.0f);
+mapBuffer.addObject(newObj);
+
+std::cout << "Added object: " << finalName << " of type " << shape << std::endl;
     }
 
     // === Save / Load Buttons ===

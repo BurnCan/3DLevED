@@ -1,0 +1,12 @@
+"NewObject" "Cube" -2.5 0.5 0 0 0 0 1 1 -0.1
+"NewObject" "Cube" -3 0.5 0.5 0 0 0 0.1 1 1
+"NewObject" "Cube" -2.5 0.5 0.5 0 0 0 0.1 1 1
+"NewObject" "Cube" -2 0.5 0.5 0 0 0 0.1 1 1
+"NewObject" "Cube" -1 0.5 0 0 0 0 1 1 0.1
+"NewObject" "Cube" -1.5 0.5 0.5 0 0 0 0.1 1 1
+"NewObject" "Cube" -0.5 0.5 0.5 0 0 0 0.1 1 1
+"NewObject" "Cube" -1 0.5 0.5 0 0 0 1 1 0.1
+"NewObject" "Cube" 0.5 0.5 0 0 0 0 1 1 0.1
+"NewObject" "Cube" 0.5 0.5 0.5 0 0 0 0.1 1 1
+"NewObject" "Cube" 2 0.5 0 0 0 0 1 1 0.1
+"NewObject" "Cube" 2 0.5 0.5 0 0 0 0.1 1 1
