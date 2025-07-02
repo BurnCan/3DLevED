@@ -76,7 +76,7 @@ bool Map::loadFromBinaryFile(const std::string& path) {
 
         MapObject obj{ name, type, pos, rot, scale };
 
-        obj.mesh = generateMeshForType(type, scale.x);
+        obj.mesh = generateMeshForType(type, 1.0f); // use unit scale for mesh
 
         objects.push_back(obj);
     }
@@ -131,7 +131,7 @@ bool Map::loadFromTextFile(const std::string& path) {
         MapObject obj{ name, type, pos, rot, scale };
 
         // Rebuild mesh
-        obj.mesh = generateMeshForType(type, scale.x);
+        obj.mesh = generateMeshForType(type, 1.0f); // use unit scale for mesh
 
         objects.push_back(obj);
     }
