@@ -53,26 +53,7 @@ void UI::RenderMainMenuBar(Map& mapBuffer, GLFWwindow* window) {
                 showSavePopup = true;
             }
 
-            if (ImGui::MenuItem("Load Map")) {
-                std::string path = "Maps/default.txt";
-                mapBuffer.clear();  //  Clear buffer before loading
 
-                bool success = false;
-                if (std::filesystem::path(path).extension() == ".txt") {
-                    success = mapBuffer.loadFromTextFile(path);
-                }
-                else {
-                    success = mapBuffer.loadFromBinaryFile(path);
-                }
-
-                if (success) {
-                    loadedMapFilename = path;
-                    std::cout << "Map loaded from: " << path << "\n";
-                }
-                else {
-                    std::cerr << "Failed to load map from: " << path << "\n";
-                }
-            }
 
             if (ImGui::MenuItem("Load From...")) {
                 showLoadPopup = true;
@@ -267,26 +248,7 @@ void UI::RenderMapEditor(Map& mapBuffer) {
         }
     }
 
-    if (ImGui::Button("Load Map")) {
-        std::string path = "Maps/default.txt";
-        mapBuffer.clear();  //  Ensure clean state
 
-        bool success = false;
-        if (std::filesystem::path(path).extension() == ".txt") {
-            success = mapBuffer.loadFromTextFile(path);
-        }
-        else {
-            success = mapBuffer.loadFromBinaryFile(path);
-        }
-
-        if (success) {
-            loadedMapFilename = path;
-            std::cout << "Map loaded!" << std::endl;
-        }
-        else {
-            std::cerr << "Failed to load map!" << std::endl;
-        }
-    }
 
     ImGui::End();
 }
