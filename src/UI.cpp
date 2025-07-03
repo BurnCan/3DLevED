@@ -8,6 +8,7 @@
 #include "imgui_impl_opengl3.h"
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <GLFW/glfw3.h>
 
