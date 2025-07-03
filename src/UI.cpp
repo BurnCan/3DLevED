@@ -168,10 +168,8 @@ void UI::RenderCameraDebugWindow() {
 }
 
 void UI::RenderMapEditor(Map& mapBuffer) {
-    std::string windowTitle = "Map Editor - [";
-    windowTitle += loadedMapFilename.empty() ? "No Map Loaded" : loadedMapFilename;
-    windowTitle += "]";
-    ImGui::Begin(windowTitle.c_str());
+    ImGui::Begin("Map Editor");  // Static title
+    ImGui::Text("Current Map: %s", loadedMapFilename.empty() ? "No Map Loaded" : loadedMapFilename.c_str());
 
     if (ImGui::CollapsingHeader("Objects in Map")) {
     for (int i = 0; i < static_cast<int>(mapBuffer.objects.size()); ) {
