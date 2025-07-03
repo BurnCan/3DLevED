@@ -181,15 +181,13 @@ void UI::RenderMapEditor(Map& mapBuffer) {
         strncpy(nameBuffer, obj.name.c_str(), sizeof(nameBuffer));
         nameBuffer[sizeof(nameBuffer) - 1] = '\0';  // Ensure null-terminated
 
-        if (ImGui::InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer))) {
+        // Name field and delete button in one line
+        ImGui::Text("Name:");
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150);
+        if (ImGui::InputText("##Name", nameBuffer, IM_ARRAYSIZE(nameBuffer))) {
             obj.name = std::string(nameBuffer);
         }
-
-        ImGui::Text("  Type: %s", obj.type.c_str());
-        ImGui::DragFloat3("Position", &obj.position.x, 0.1f);
-        ImGui::DragFloat3("Rotation", &obj.rotation.x, 1.0f);  // Degrees
-        ImGui::DragFloat3("Scale",    &obj.scale.x,    0.1f);
-
         ImGui::SameLine();
         std::string deleteLabel = "Delete##" + std::to_string(i);
         if (ImGui::Button(deleteLabel.c_str())) {
@@ -197,7 +195,92 @@ void UI::RenderMapEditor(Map& mapBuffer) {
             mapBuffer.removeObjectByIndex(i);
             ImGui::PopID();
             continue;
-        }
+    }
+
+        ImGui::Text("Position");
+        ImGui::PushID("Position");
+
+        // X
+        ImGui::Text("X "); ImGui::SameLine();
+        ImGui::SliderFloat("##PosX", &obj.position.x, -10.0f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputPosX", &obj.position.x, 0.1f, 1.0f, "%.2f");
+
+        // Y
+        ImGui::Text("Y "); ImGui::SameLine();
+        ImGui::SliderFloat("##PosY", &obj.position.y, -10.0f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputPosY", &obj.position.y, 0.1f, 1.0f, "%.2f");
+
+        // Z
+        ImGui::Text("Z "); ImGui::SameLine();
+        ImGui::SliderFloat("##PosZ", &obj.position.z, -10.0f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputPosZ", &obj.position.z, 0.1f, 1.0f, "%.2f");
+
+        ImGui::PopID();
+
+
+        // Rotation
+        ImGui::Text("Rotation");
+        ImGui::PushID("Rotation");
+
+        // X
+        ImGui::Text("X "); ImGui::SameLine();
+        ImGui::SliderFloat("##RotX", &obj.rotation.x, -180.0f, 180.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputRotX", &obj.rotation.x, 0.1f, 5.0f, "%.2f");
+
+        // Y
+        ImGui::Text("Y "); ImGui::SameLine();
+        ImGui::SliderFloat("##RotY", &obj.rotation.y, -180.0f, 180.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputRotY", &obj.rotation.y, 0.1f, 5.0f, "%.2f");
+
+        // Z
+        ImGui::Text("Z "); ImGui::SameLine();
+        ImGui::SliderFloat("##RotZ", &obj.rotation.z, -180.0f, 180.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputRotZ", &obj.rotation.z, 0.1f, 5.0f, "%.2f");
+
+        ImGui::PopID();
+
+        ImGui::Spacing();
+
+        // Scale
+        ImGui::Text("Scale");
+        ImGui::PushID("Scale");
+
+        // X
+        ImGui::Text("X "); ImGui::SameLine();
+        ImGui::SliderFloat("##ScaleX", &obj.scale.x, 0.01f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputScaleX", &obj.scale.x, 0.1f, 1.0f, "%.2f");
+
+        // Y
+        ImGui::Text("Y "); ImGui::SameLine();
+        ImGui::SliderFloat("##ScaleY", &obj.scale.y, 0.01f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputScaleY", &obj.scale.y, 0.1f, 1.0f, "%.2f");
+
+        // Z
+        ImGui::Text("Z "); ImGui::SameLine();
+        ImGui::SliderFloat("##ScaleZ", &obj.scale.z, 0.01f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(90);
+        ImGui::InputFloat("##InputScaleZ", &obj.scale.z, 0.1f, 1.0f, "%.2f");
+
+        ImGui::PopID();
+
+
 
         ImGui::Separator();
         ++i;
