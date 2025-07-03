@@ -29,6 +29,11 @@ std::string getExecutableDir() {
     return ".";
 }
 
+std::filesystem::path currentShaderPath;
+std::vector<std::filesystem::path> shaders;
+int selectedIndex = -1;
+std::vector<char> shaderBuffer;
+
 std::string loadShaderSource(const std::string& filename) {
     std::string shaderPath = "shaders/" + filename;
     std::ifstream shaderFile(shaderPath);
@@ -131,7 +136,7 @@ bool saveShaderSource(const std::filesystem::path& path, const std::string& cont
     return true;
 }
 
-static int TextEditCallback(ImGuiInputTextCallbackData* data) {
+int TextEditCallback(ImGuiInputTextCallbackData* data) {
     if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
         auto* buf = reinterpret_cast<std::vector<char>*>(data->UserData);
         buf->resize(data->BufSize);
@@ -142,65 +147,12 @@ static int TextEditCallback(ImGuiInputTextCallbackData* data) {
 
 
 
-void renderShaderEditor(const std::filesystem::path& shaderDir, const glm::mat4& mvp) {
-    static std::filesystem::path currentShaderPath;
-    static std::vector<std::filesystem::path> shaders = listShaderFiles(shaderDir);
-    static int selectedIndex = -1;
-    static std::vector<char> shaderBuffer;
-
-
-    ImGui::Begin("Shader Utility");
-
-    // === Shader File Dropdown ===
-    if (ImGui::BeginCombo("Shader Files", selectedIndex >= 0 ? shaders[selectedIndex].filename().string().c_str() : "Select Shader")) {
-        for (int i = 0; i < shaders.size(); ++i) {
-            bool selected = (selectedIndex == i);
-            if (ImGui::Selectable(shaders[i].filename().string().c_str(), selected)) {
-                selectedIndex = i;
-                currentShaderPath = shaders[i];
-                std::ifstream in(currentShaderPath);
-                std::stringstream ss;
-                ss << in.rdbuf();
-                std::string fileContent = ss.str();
-                shaderBuffer = std::vector<char>(fileContent.begin(), fileContent.end());
-                shaderBuffer.push_back('\0');
-            }
-        }
-        ImGui::EndCombo();
-    }
-
-    if (selectedIndex >= 0 && !shaderBuffer.empty()) {
-        ImGui::InputTextMultiline("##ShaderText", shaderBuffer.data(), shaderBuffer.size(),
-            ImVec2(-FLT_MIN, 300),
-            ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_CallbackResize,
-            TextEditCallback, &shaderBuffer);
-
-        if (ImGui::Button("Save Shader")) {
-            saveShaderSource(currentShaderPath, shaderBuffer.data());
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Reload Shader")) {
-            GLuint newProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
-            if (newProgram != 0) {
-                glDeleteProgram(shaderProgram);
-                shaderProgram = newProgram;
-                glUseProgram(shaderProgram);
-            }
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Archive Shader")) {
-            std::filesystem::path archiveDir = "../../archive/shaders";
-            std::filesystem::create_directories(archiveDir);
-            std::ofstream out(archiveDir / currentShaderPath.filename());
-            out.write(shaderBuffer.data(), strlen(shaderBuffer.data()));
-        }
-    }
 
 
 
-    ImGui::End();
 
-}
+
+
 
 
 

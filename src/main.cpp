@@ -15,10 +15,14 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <filesystem>
 #include "shader_utility.h"
 #include "editorCamera.h"
 #include "mesh.h"
 #include "ShapeFactory.h"
+#include "map.h"
+#include "UI.h"
+
 
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
@@ -34,7 +38,6 @@ std::string loadShaderSource(const char* filepath);
 // Camera and input
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-EditorCamera camera;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -43,21 +46,22 @@ bool firstMouse = true;
 Mesh currentMesh;
 
 // ImGui shape selection
-void renderEditor() {
-    ImGui::Begin("Mesh Editor");
+//void renderEditor() {
+    //ImGui::Begin("Mesh Editor");
 
-    if (ImGui::Button("Create Cube")) {
-        currentMesh = createCube(1.0f);
-    }
-    if (ImGui::Button("Create Sphere")) {
-        currentMesh = createSphere(1.0f, 36, 18);
-    }
+    //if (ImGui::Button("Create Cube")) {
+        //currentMesh = createCube(1.0f);
+    //}
+    //if (ImGui::Button("Create Sphere")) {
+        //currentMesh = createSphere(1.0f, 36, 18);
+    //}
 
-    ImGui::End();
-}
+    //ImGui::End();
+//}
 
 int main()
 {
+    std::filesystem::create_directories("Maps");
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -104,6 +108,11 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
+    
+
+    // Declare and initialize the map object
+    //Map currentMap;
+    
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
@@ -140,13 +149,49 @@ int main()
         glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.3f)));
 
         // ImGui UI
-        camera.renderDebugWindow();
+        //camera.renderDebugWindow();
+        Map& mapBuffer = UI::GetMapBuffer();
+        UI::RenderMainMenuBar(mapBuffer, window);
+        UI::RenderMapEditor(mapBuffer);
         camera.renderGrid(mvp);
-        renderShaderEditor("shaders/", mvp);
-        renderEditor();
+        //renderShaderEditor("shaders/", mvp);
+        //renderEditor();
+        
+        
+        UI::RenderShaderUtility(mvp);
+        UI::RenderCameraDebugWindow();
 
         // Draw mesh
         currentMesh.render();
+
+        
+
+        
+
+
+        
+
+        // Render the map objects
+        for (auto& obj : UI::GetMapBuffer().objects) {
+            // Set the transformation matrix (model, view, projection)
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, obj.position);
+            model = glm::rotate(model, glm::radians(obj.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(obj.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(obj.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::scale(model, obj.scale);
+
+            glm::mat4 view = camera.getViewMatrix();
+            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
+            glm::mat4 mvp = projection * view * model;
+
+            glUseProgram(shaderProgram);
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+            obj.mesh.render();
+
+        }
 
         // ImGui Render
         ImGui::Render();

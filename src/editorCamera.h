@@ -6,15 +6,15 @@
 #include <GLFW/glfw3.h>
 
 
-
-
 class EditorCamera {
 public:
+    bool invertPitch = true;
     bool useCameraLight = true;
+    bool showGrid = true;
     glm::vec3 getFront() const;
     float getYaw() const { return yaw; }
     float getPitch() const { return pitch; }
-    
+
 
 
     EditorCamera(float yaw = -90.0f, float pitch = 0.0f, float distance = 5.0f);
@@ -31,20 +31,20 @@ public:
 
     // ImGui camera debug
     void renderDebugWindow();
-    void renderGrid(const glm::mat4& mvp); 
-    
+    void renderGrid(const glm::mat4& mvp);
 
-    bool invertPitch = true; 
+
+
+
 
 private:
-    bool showGrid = true;                  
     bool gridInitialized = false;
     GLuint gridVAO = 0, gridVBO = 0, gridShader = 0;
     std::vector<float> gridVertices;
     std::vector<float> generateXZGridLines(float size, int divisions);
-    void initGrid(); 
+    void initGrid();
     void setupGridShader();     // compiles grid shader only once
-    
+
     glm::vec3 front;
     float yaw;
     float pitch;
@@ -57,7 +57,9 @@ private:
     void updateCameraVectors();
 };
 
+// Global instances and flags
 extern EditorCamera camera;
+
 
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
