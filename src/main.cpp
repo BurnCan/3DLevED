@@ -62,6 +62,8 @@ Mesh currentMesh;
 int main()
 {
     std::filesystem::create_directories("Maps");
+    // Load available shaders
+    shaders = listShaderFiles(currentShaderPath);
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -98,6 +100,8 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     // Load shader
+    listShaderFiles(currentShaderPath);
+
     shaderProgram = createShaderProgramFromFile("basic.vert", "basic.frag");
 
     // ImGui
@@ -171,27 +175,8 @@ int main()
 
         
 
-        // Render the map objects
-        for (auto& obj : UI::GetMapBuffer().objects) {
-            // Set the transformation matrix (model, view, projection)
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, obj.position);
-            model = glm::rotate(model, glm::radians(obj.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(obj.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(obj.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::scale(model, obj.scale);
-
-            glm::mat4 view = camera.getViewMatrix();
-            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
-            glm::mat4 mvp = projection * view * model;
-
-            glUseProgram(shaderProgram);
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-            obj.mesh.render();
-
-        }
+        // Render all map objects in one call
+        UI::GetMapBuffer().render(camera, display_w, display_h);
 
         // ImGui Render
         ImGui::Render();

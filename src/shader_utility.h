@@ -7,6 +7,7 @@
 
 // External state variables
 extern GLuint shaderProgram; // Declare it for external use
+extern std::vector<std::filesystem::path> shaders;
 extern std::filesystem::path currentShaderPath;
 extern std::vector<std::filesystem::path> shaders;
 extern int selectedIndex;
@@ -18,6 +19,7 @@ extern std::vector<char> shaderBuffer;
 std::vector<std::filesystem::path> listShaderFiles(const std::filesystem::path& dir);
 bool saveShaderSource(const std::filesystem::path& filePath, const std::string& content);
 
+GLuint loadShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
 GLuint createShaderProgramFromFile(const std::string& vertFile, const std::string& fragFile);
 int TextEditCallback(ImGuiInputTextCallbackData* data);
 

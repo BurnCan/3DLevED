@@ -168,127 +168,171 @@ void UI::RenderCameraDebugWindow() {
 }
 
 void UI::RenderMapEditor(Map& mapBuffer) {
-    ImGui::Begin("Map Editor");  // Static title
+    ImGui::Begin("Map Editor");
     ImGui::Text("Current Map: %s", loadedMapFilename.empty() ? "No Map Loaded" : loadedMapFilename.c_str());
 
     if (ImGui::CollapsingHeader("Objects in Map")) {
-    for (int i = 0; i < static_cast<int>(mapBuffer.objects.size()); ) {
-        ImGui::PushID(i);  // Ensure unique ImGui ID for each object
+        for (int i = 0; i < static_cast<int>(mapBuffer.objects.size()); ++i) {
+            ImGui::PushID(i);
+            auto& obj = mapBuffer.objects[i];
 
-        auto& obj = mapBuffer.objects[i];  // Editable reference
+            char nameBuffer[64];
+            strncpy(nameBuffer, obj.name.c_str(), sizeof(nameBuffer));
+            nameBuffer[sizeof(nameBuffer) - 1] = '\0';
 
-        char nameBuffer[64];
-        strncpy(nameBuffer, obj.name.c_str(), sizeof(nameBuffer));
-        nameBuffer[sizeof(nameBuffer) - 1] = '\0';  // Ensure null-terminated
+            ImGui::Text("Name:");
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(90);
+            if (ImGui::InputText("##Name", nameBuffer, IM_ARRAYSIZE(nameBuffer))) {
+                obj.name = std::string(nameBuffer);
+            }
+            ImGui::SameLine();
+            std::string deleteLabel = "Delete##" + std::to_string(i);
+            if (ImGui::Button(deleteLabel.c_str())) {
+                std::cout << "Object " << obj.name << " deleted!" << std::endl;
+                mapBuffer.removeObjectByIndex(i);
+                ImGui::PopID();
+                continue;
+            }
 
-        // Name field and delete button in one line
-        ImGui::Text("Name:");
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(150);
-        if (ImGui::InputText("##Name", nameBuffer, IM_ARRAYSIZE(nameBuffer))) {
-            obj.name = std::string(nameBuffer);
+           ImGui::Text("Shaders");
+ImGui::SameLine();
+
+// Vertex Shader Combo Box
+ImGui::SetNextItemWidth(120);
+if (ImGui::BeginCombo("Vertex Shader", std::filesystem::path(obj.vertexShader).filename().string().c_str())) {
+    for (const auto& shaderPath : shaders) {
+        std::string filename = shaderPath.filename().string();
+        bool isSelected = (obj.vertexShader == filename);  // Match by filename
+
+        if (ImGui::Selectable(filename.c_str(), isSelected)) {
+            obj.vertexShader = filename;  // Store only the filename
         }
-        ImGui::SameLine();
-        std::string deleteLabel = "Delete##" + std::to_string(i);
-        if (ImGui::Button(deleteLabel.c_str())) {
-            std::cout << "Object " << obj.name << " deleted!" << std::endl;
-            mapBuffer.removeObjectByIndex(i);
-            ImGui::PopID();
-            continue;
     }
+    ImGui::EndCombo();
+}
 
-        ImGui::Text("Position");
-        ImGui::PushID("Position");
+ImGui::SameLine();
 
-        // X
-        ImGui::Text("X "); ImGui::SameLine();
-        ImGui::SliderFloat("##PosX", &obj.position.x, -10.0f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputPosX", &obj.position.x, 0.1f, 1.0f, "%.2f");
+// Fragment Shader Combo Box
+ImGui::SetNextItemWidth(120);
+if (ImGui::BeginCombo("Fragment Shader", std::filesystem::path(obj.fragmentShader).filename().string().c_str())) {
+    for (const auto& shaderPath : shaders) {
+        std::string filename = shaderPath.filename().string();
+        bool isSelected = (obj.fragmentShader == filename);
 
-        // Y
-        ImGui::Text("Y "); ImGui::SameLine();
-        ImGui::SliderFloat("##PosY", &obj.position.y, -10.0f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputPosY", &obj.position.y, 0.1f, 1.0f, "%.2f");
-
-        // Z
-        ImGui::Text("Z "); ImGui::SameLine();
-        ImGui::SliderFloat("##PosZ", &obj.position.z, -10.0f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputPosZ", &obj.position.z, 0.1f, 1.0f, "%.2f");
-
-        ImGui::PopID();
-
-
-        // Rotation
-        ImGui::Text("Rotation");
-        ImGui::PushID("Rotation");
-
-        // X
-        ImGui::Text("X "); ImGui::SameLine();
-        ImGui::SliderFloat("##RotX", &obj.rotation.x, -180.0f, 180.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputRotX", &obj.rotation.x, 0.1f, 5.0f, "%.2f");
-
-        // Y
-        ImGui::Text("Y "); ImGui::SameLine();
-        ImGui::SliderFloat("##RotY", &obj.rotation.y, -180.0f, 180.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputRotY", &obj.rotation.y, 0.1f, 5.0f, "%.2f");
-
-        // Z
-        ImGui::Text("Z "); ImGui::SameLine();
-        ImGui::SliderFloat("##RotZ", &obj.rotation.z, -180.0f, 180.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputRotZ", &obj.rotation.z, 0.1f, 5.0f, "%.2f");
-
-        ImGui::PopID();
-
-        ImGui::Spacing();
-
-        // Scale
-        ImGui::Text("Scale");
-        ImGui::PushID("Scale");
-
-        // X
-        ImGui::Text("X "); ImGui::SameLine();
-        ImGui::SliderFloat("##ScaleX", &obj.scale.x, 0.01f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputScaleX", &obj.scale.x, 0.1f, 1.0f, "%.2f");
-
-        // Y
-        ImGui::Text("Y "); ImGui::SameLine();
-        ImGui::SliderFloat("##ScaleY", &obj.scale.y, 0.01f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputScaleY", &obj.scale.y, 0.1f, 1.0f, "%.2f");
-
-        // Z
-        ImGui::Text("Z "); ImGui::SameLine();
-        ImGui::SliderFloat("##ScaleZ", &obj.scale.z, 0.01f, 10.0f, "", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(90);
-        ImGui::InputFloat("##InputScaleZ", &obj.scale.z, 0.1f, 1.0f, "%.2f");
-
-        ImGui::PopID();
-
-
-
-        ImGui::Separator();
-        ++i;
-        ImGui::PopID();
+        if (ImGui::Selectable(filename.c_str(), isSelected)) {
+            obj.fragmentShader = filename;
+        }
     }
+    ImGui::EndCombo();
 }
 
 
+            ImGui::Text("Position");
+ImGui::PushID("Position");
+
+// Begin a table for Position (3 columns)
+if (ImGui::BeginTable("PositionTable", 3, ImGuiTableFlags_BordersInnerV)) {
+    ImGui::TableSetupColumn("Axis", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+    ImGui::TableSetupColumn("Slider", ImGuiTableColumnFlags_WidthStretch);
+    ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+    ImGui::TableHeadersRow();
+
+    // X Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("X");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##PosX", &obj.position.x, -10.0f, 10.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputPosX", &obj.position.x, 0.1f, 1.0f, "%.2f");
+
+    // Y Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("Y");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##PosY", &obj.position.y, -10.0f, 10.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputPosY", &obj.position.y, 0.1f, 1.0f, "%.2f");
+
+    // Z Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("Z");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##PosZ", &obj.position.z, -10.0f, 10.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputPosZ", &obj.position.z, 0.1f, 1.0f, "%.2f");
+
+    ImGui::EndTable();
+}
+
+ImGui::PopID();
+
+ImGui::Text("Rotation");
+ImGui::PushID("Rotation");
+
+// Begin a table for Rotation (3 columns)
+if (ImGui::BeginTable("RotationTable", 3, ImGuiTableFlags_BordersInnerV)) {
+    ImGui::TableSetupColumn("Axis", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+    ImGui::TableSetupColumn("Slider", ImGuiTableColumnFlags_WidthStretch);
+    ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthFixed,150.0f);
+    ImGui::TableHeadersRow();
+
+    // X Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("X");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##RotX", &obj.rotation.x, -180.0f, 180.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputRotX", &obj.rotation.x, 0.1f, 5.0f, "%.2f");
+
+    // Y Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("Y");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##RotY", &obj.rotation.y, -180.0f, 180.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputRotY", &obj.rotation.y, 0.1f, 5.0f, "%.2f");
+
+    // Z Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("Z");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##RotZ", &obj.rotation.z, -180.0f, 180.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputRotZ", &obj.rotation.z, 0.1f, 5.0f, "%.2f");
+
+    ImGui::EndTable();
+}
+
+ImGui::PopID();
+
+ImGui::Text("Scale");
+ImGui::PushID("Scale");
+
+// Begin a table for Scale (3 columns)
+if (ImGui::BeginTable("ScaleTable", 3, ImGuiTableFlags_BordersInnerV)) {
+    ImGui::TableSetupColumn("Axis", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+    ImGui::TableSetupColumn("Slider", ImGuiTableColumnFlags_WidthStretch);
+    ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+    ImGui::TableHeadersRow();
+
+    // X Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("X");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##ScaleX", &obj.scale.x, 0.01f, 10.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputScaleX", &obj.scale.x, 0.1f, 1.0f, "%.2f");
+
+    // Y Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("Y");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##ScaleY", &obj.scale.y, 0.01f, 10.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputScaleY", &obj.scale.y, 0.1f, 1.0f, "%.2f");
+
+    // Z Axis
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0); ImGui::Text("Z");
+    ImGui::TableSetColumnIndex(1); ImGui::SliderFloat("##ScaleZ", &obj.scale.z, 0.01f, 10.0f);
+    ImGui::TableSetColumnIndex(2); ImGui::InputFloat("##InputScaleZ", &obj.scale.z, 0.1f, 1.0f, "%.2f");
+
+    ImGui::EndTable();
+}
+
+ImGui::PopID();
+
+
+            ImGui::Separator();
+            ImGui::PopID();
+        }
+    }
 
     // === Add Object ===
     static const char* shapeOptions[] = { "Cube", "Sphere" };
@@ -297,7 +341,6 @@ void UI::RenderMapEditor(Map& mapBuffer) {
 
     ImGui::Separator();
     ImGui::Text("Add New Object");
-
     ImGui::InputText("Name", objectName, IM_ARRAYSIZE(objectName));
 
     if (ImGui::BeginCombo("Shape Type", shapeOptions[currentShapeIndex])) {
@@ -316,7 +359,6 @@ void UI::RenderMapEditor(Map& mapBuffer) {
         std::string baseName = objectName;
         std::string finalName = baseName;
 
-        // Ensure uniqueness
         int suffix = 1;
         bool nameExists = true;
         while (nameExists) {
@@ -330,38 +372,29 @@ void UI::RenderMapEditor(Map& mapBuffer) {
             }
         }
 
-// Create and add the new object
-Map::MapObject newObj(finalName, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-newObj.mesh = generateMeshForType(shape, 1.0f);
-mapBuffer.addObject(newObj);
-
-std::cout << "Added object: " << finalName << " of type " << shape << std::endl;
+        Map::MapObject newObj(finalName, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f), "basic.vert", "basic.frag");
+        newObj.mesh = generateMeshForType(shape, 1.0f);
+        mapBuffer.addObject(newObj);
+        std::cout << "Added object: " << finalName << " of type " << shape << std::endl;
     }
 
-    // === Save / Load Buttons ===
     ImGui::Separator();
-
     if (ImGui::Button("Save Map")) {
         if (!loadedMapFilename.empty()) {
             std::filesystem::path path(loadedMapFilename);
-            if (path.extension() == ".txt") {
-                if (!mapBuffer.saveToTextFile(loadedMapFilename)) {
-                    std::cerr << "Failed to save map to: " << loadedMapFilename << std::endl;
-                }
+            bool success = path.extension() == ".txt"
+                ? mapBuffer.saveToTextFile(loadedMapFilename)
+                : mapBuffer.saveToBinaryFile(loadedMapFilename);
+
+            if (!success) {
+                std::cerr << "Failed to save map to: " << loadedMapFilename << std::endl;
+            } else {
+                std::cout << "Map saved to: " << loadedMapFilename << std::endl;
             }
-            else {
-                if (!mapBuffer.saveToBinaryFile(loadedMapFilename)) {
-                    std::cerr << "Failed to save map to: " << loadedMapFilename << std::endl;
-                }
-            }
-            std::cout << "Map saved to: " << loadedMapFilename << std::endl;
-        }
-        else {
-            showSavePopup = true;  // No file loaded — show Save As popup
+        } else {
+            showSavePopup = true;
         }
     }
-
-
 
     ImGui::End();
 }

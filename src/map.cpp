@@ -5,10 +5,14 @@
 #include <string>
 #include <algorithm>
 #include <filesystem>
-#include <iomanip>
+#include <iomanip> // for std::quoted
 #include "map.h"
-#include "mesh.h"  
+#include "mesh.h"
 #include "ShapeFactory.h"
+#include "shader_utility.h"
+#include "editorCamera.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 
 // Save the map to a file in binary format
@@ -19,28 +23,29 @@ bool Map::saveToBinaryFile(const std::string& path) const {
         return false;
     }
 
-    // Write the number of objects in the map
     int32_t objectCount = static_cast<int32_t>(objects.size());
     out.write(reinterpret_cast<char*>(&objectCount), sizeof(objectCount));
 
     for (const auto& obj : objects) {
-        // Save name length and name
         uint32_t nameLen = static_cast<uint32_t>(obj.name.size());
         out.write(reinterpret_cast<char*>(&nameLen), sizeof(nameLen));
         out.write(obj.name.data(), nameLen);
 
-        // Save type length and type
         uint32_t typeLen = static_cast<uint32_t>(obj.type.size());
         out.write(reinterpret_cast<char*>(&typeLen), sizeof(typeLen));
         out.write(obj.type.data(), typeLen);
 
-        // Save position, rotation, and scale (glm::vec3 is 3 floats)
         out.write(reinterpret_cast<const char*>(&obj.position), sizeof(float) * 3);
         out.write(reinterpret_cast<const char*>(&obj.rotation), sizeof(float) * 3);
         out.write(reinterpret_cast<const char*>(&obj.scale), sizeof(float) * 3);
 
-        
-        
+        uint32_t vertexShaderLen = static_cast<uint32_t>(obj.vertexShader.size());
+        out.write(reinterpret_cast<char*>(&vertexShaderLen), sizeof(vertexShaderLen));
+        out.write(obj.vertexShader.data(), vertexShaderLen);
+
+        uint32_t fragmentShaderLen = static_cast<uint32_t>(obj.fragmentShader.size());
+        out.write(reinterpret_cast<char*>(&fragmentShaderLen), sizeof(fragmentShaderLen));
+        out.write(obj.fragmentShader.data(), fragmentShaderLen);
     }
 
     return true;
@@ -74,8 +79,19 @@ bool Map::loadFromBinaryFile(const std::string& path) {
         in.read(reinterpret_cast<char*>(&rot), sizeof(float) * 3);
         in.read(reinterpret_cast<char*>(&scale), sizeof(float) * 3);
 
-        MapObject obj{ name, type, pos, rot, scale };
+        uint32_t vertexShaderLen = 0;
+        in.read(reinterpret_cast<char*>(&vertexShaderLen), sizeof(vertexShaderLen));
+        std::string vertexShader(vertexShaderLen, '\0');
+        in.read(&vertexShader[0], vertexShaderLen);
 
+        uint32_t fragmentShaderLen = 0;
+        in.read(reinterpret_cast<char*>(&fragmentShaderLen), sizeof(fragmentShaderLen));
+        std::string fragmentShader(fragmentShaderLen, '\0');
+        in.read(&fragmentShader[0], fragmentShaderLen);
+
+        MapObject obj{ name, type, pos, rot, scale, vertexShader, fragmentShader };
+
+        // Rebuild mesh
         obj.mesh = generateMeshForType(type, 1.0f); // use unit scale for mesh
 
         objects.push_back(obj);
@@ -84,7 +100,7 @@ bool Map::loadFromBinaryFile(const std::string& path) {
     return true;
 }
 
-//Saving to text file
+// Saving to text file
 bool Map::saveToTextFile(const std::string& path) const {
     std::ofstream out(path);
     if (!out) {
@@ -97,7 +113,9 @@ bool Map::saveToTextFile(const std::string& path) const {
             << std::quoted(obj.type) << " "
             << obj.position.x << " " << obj.position.y << " " << obj.position.z << " "
             << obj.rotation.x << " " << obj.rotation.y << " " << obj.rotation.z << " "
-            << obj.scale.x << " " << obj.scale.y << " " << obj.scale.z << "\n";
+            << obj.scale.x << " " << obj.scale.y << " " << obj.scale.z << " "
+            << std::quoted(obj.vertexShader) << " "   // Save vertex shader path
+            << std::quoted(obj.fragmentShader) << "\n";  // Save fragment shader path
     }
 
     return true;
@@ -117,18 +135,19 @@ bool Map::loadFromTextFile(const std::string& path) {
         if (line.empty() || line[0] == '#') continue;
 
         std::istringstream iss(line);
-        std::string name, type;
+        std::string name, type, vertexShader, fragmentShader;
         glm::vec3 pos, rot, scale;
 
         if (!(iss >> std::quoted(name) >> std::quoted(type) >>
             pos.x >> pos.y >> pos.z >>
             rot.x >> rot.y >> rot.z >>
-            scale.x >> scale.y >> scale.z)) {
+            scale.x >> scale.y >> scale.z >>
+            std::quoted(vertexShader) >> std::quoted(fragmentShader))) {
             std::cerr << "Invalid map line: " << line << "\n";
             continue;
         }
 
-        MapObject obj{ name, type, pos, rot, scale };
+        MapObject obj{ name, type, pos, rot, scale, vertexShader, fragmentShader };
 
         // Rebuild mesh
         obj.mesh = generateMeshForType(type, 1.0f); // use unit scale for mesh
@@ -137,6 +156,10 @@ bool Map::loadFromTextFile(const std::string& path) {
     }
 
     return true;
+}
+
+void Map::addObject(const MapObject& obj) {
+    objects.push_back(obj);
 }
 
 void Map::removeObjectByName(const std::string& objectName) {
@@ -156,4 +179,31 @@ void Map::removeObjectByIndex(size_t index) {
 //Clear the map buffer
 void Map::clear() {
     objects.clear();
+}
+
+
+
+
+
+void Map::render(const Camera& camera, int display_w, int display_h) {
+    for (const auto& obj : objects) {
+        GLuint objectShaderProgram = loadShader(obj.vertexShader, obj.fragmentShader);
+        glUseProgram(objectShaderProgram);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, obj.position);
+        model = glm::rotate(model, glm::radians(obj.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(obj.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(obj.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, obj.scale);
+
+        glm::mat4 view = camera.getViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
+        glm::mat4 mvp = projection * view * model;
+
+        glUniformMatrix4fv(glGetUniformLocation(objectShaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(glGetUniformLocation(objectShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+        obj.mesh.render();
+    }
 }

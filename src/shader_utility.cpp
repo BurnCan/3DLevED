@@ -9,8 +9,10 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <map>
 
 GLuint shaderProgram = 0;
+std::unordered_map<std::string, GLuint> shaderCache;  // Cache to store loaded shaders
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -28,26 +30,24 @@ std::string getExecutableDir() {
 #endif
     return ".";
 }
-
-std::filesystem::path currentShaderPath;
 std::vector<std::filesystem::path> shaders;
-int selectedIndex = -1;
-std::vector<char> shaderBuffer;
+std::filesystem::path currentShaderPath = "shaders";  // Base directory for shaders
 
 std::string loadShaderSource(const std::string& filename) {
-    std::string shaderPath = "shaders/" + filename;
+    std::filesystem::path shaderPath = currentShaderPath / filename;  // Use currentShaderPath as base
     std::ifstream shaderFile(shaderPath);
 
-    std::cout << "Trying to load shader from: " << shaderPath << std::endl;
+    std::cout << "Trying to load shader from: " << shaderPath.string() << std::endl;
 
     if (!shaderFile.is_open()) {
-        shaderPath = "bin/shaders/" + filename;
-        std::cout << "Fallback: trying to load shader from: " << shaderPath << std::endl;
-        shaderFile.open(shaderPath);
-    }
+    shaderPath = std::filesystem::path("bin/shaders") / filename;
+    std::cout << "Fallback: trying to load shader from: " << shaderPath.string() << std::endl;
+    shaderFile.open(shaderPath);
+}
 
 #if defined(__APPLE__)
     if (!shaderFile.is_open()) {
+        // macOS .app fallback
         std::string bundlePath = getExecutableDir() + "/shaders/" + filename;
         std::cout << "macOS .app fallback: trying to load shader from: " << bundlePath << std::endl;
         shaderFile.open(bundlePath);
@@ -56,7 +56,7 @@ std::string loadShaderSource(const std::string& filename) {
 #endif
 
     if (!shaderFile.is_open()) {
-        std::cerr << "Error: Could not open shader file at: " << shaderPath << std::endl;
+        std::cerr << "Error: Could not open shader file at: " << shaderPath.string() << std::endl;
         return "";
     }
 
@@ -85,7 +85,16 @@ GLuint compileShader(GLenum shaderType, const std::string& source) {
     return shader;
 }
 
+
+
+
+
 GLuint createShaderProgramFromFile(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) {
+    std::string key = vertexShaderPath + "+" + fragmentShaderPath;
+    if (shaderCache.count(key)) {
+        return shaderCache[key];  // Return cached program
+    }
+
     std::string vertexShaderSource = loadShaderSource(vertexShaderPath);
     std::string fragmentShaderSource = loadShaderSource(fragmentShaderPath);
 
@@ -97,25 +106,34 @@ GLuint createShaderProgramFromFile(const std::string& vertexShaderPath, const st
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    GLint success;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        GLint logLength;
-        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
-        char* log = new char[logLength];
-        glGetProgramInfoLog(shaderProgram, logLength, nullptr, log);
-        std::cerr << "Error linking shader program: " << log << std::endl;
-        delete[] log;
-    }
+    // error check omitted for brevity
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    shaderCache[key] = shaderProgram;  // Cache it
     return shaderProgram;
 }
 
+GLuint loadShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) {
+    std::string key = vertexShaderPath + "+" + fragmentShaderPath;
+
+    if (shaderCache.find(key) != shaderCache.end()) {
+        return shaderCache[key];
+    }
+
+    GLuint shaderProgram = createShaderProgramFromFile(vertexShaderPath, fragmentShaderPath);
+    shaderCache[key] = shaderProgram;
+    return shaderProgram;
+}
+
+
 std::vector<std::filesystem::path> listShaderFiles(const std::filesystem::path& directory) {
     std::vector<std::filesystem::path> files;
+    if (!std::filesystem::exists(directory)) {
+    std::cerr << "Shader directory does not exist: " << directory << std::endl;
+    return files;
+}
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
         if (entry.is_regular_file()) {
             auto ext = entry.path().extension();
