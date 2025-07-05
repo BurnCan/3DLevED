@@ -10,7 +10,7 @@
 class EditorCamera : public Camera {
 public:
     bool invertPitch = true;
-    bool useCameraLight = true;  // Used to control lighting from camera's perspective
+    //bool useCameraLight = true;  // Used to control lighting from camera's perspective
     bool showGrid = true;
 
     EditorCamera(float yaw = -90.0f, float pitch = 0.0f, float distance = 5.0f);
@@ -23,7 +23,7 @@ public:
     glm::mat4 getViewMatrix() const override;
     glm::vec3 getPosition() const override;
 
-    glm::vec3 getFront() const;
+    glm::vec3 getFront() const override;
     float getYaw() const { return yaw; }
     float getPitch() const { return pitch; }
 
@@ -61,5 +61,6 @@ extern EditorCamera camera;
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 
 #endif // EDITOR_CAMERA_H

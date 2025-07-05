@@ -118,74 +118,49 @@ int main()
     //Map currentMap;
     
     while (!glfwWindowShouldClose(window)) {
-        float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+    float currentFrame = static_cast<float>(glfwGetTime());
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
 
-        glfwPollEvents();
+    glfwPollEvents();
 
-        // Start ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+    // Start ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
-        // Clear
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Clear
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Use shader
-        glUseProgram(shaderProgram);
+    // Matrices for grid and UI
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = camera.getViewMatrix();
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
+    glm::mat4 mvp = projection * view * model;
 
-        // Matrices
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = camera.getViewMatrix();
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
-        glm::mat4 mvp = projection * view * model;
+    // ImGui UI
+    Map& mapBuffer = UI::GetMapBuffer();
+    UI::RenderMainMenuBar(mapBuffer, window);
+    UI::RenderMapEditor(mapBuffer);
+    UI::RenderShaderUtility(mvp);
+    UI::RenderCameraDebugWindow();
 
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    // Grid (uses its own shader)
+    camera.renderGrid(mvp);
 
-        // Lighting
-        glm::vec3 lightDir = camera.useCameraLight ? -camera.getFront() : glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
-        glUniform3fv(glGetUniformLocation(shaderProgram, "lightDir"), 1, glm::value_ptr(lightDir));
-        glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, glm::value_ptr(glm::vec3(1.0f)));
-        glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.3f)));
+    // Map object rendering
+    mapBuffer.render(camera, display_w, display_h);
 
-        // ImGui UI
-        //camera.renderDebugWindow();
-        Map& mapBuffer = UI::GetMapBuffer();
-        UI::RenderMainMenuBar(mapBuffer, window);
-        UI::RenderMapEditor(mapBuffer);
-        camera.renderGrid(mvp);
-        //renderShaderEditor("shaders/", mvp);
-        //renderEditor();
-        
-        
-        UI::RenderShaderUtility(mvp);
-        UI::RenderCameraDebugWindow();
+    // ImGui render pass
+    ImGui::Render();
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        // Draw mesh
-        currentMesh.render();
-
-        
-
-        
-
-
-        
-
-        // Render all map objects in one call
-        UI::GetMapBuffer().render(camera, display_w, display_h);
-
-        // ImGui Render
-        ImGui::Render();
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        glfwSwapBuffers(window);
-    }
+    glfwSwapBuffers(window);
+}
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();

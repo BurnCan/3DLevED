@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+
 class Camera {
 public:
     virtual ~Camera() = default;
@@ -12,9 +13,11 @@ public:
     glm::vec3 front;  // Camera's front vector (direction)
     bool useCameraLight = true;  // Option to use camera light direction
 
-    glm::vec3 getFront() const {
-        return front;
+    virtual glm::vec3 getFront() const {
+        return front;  // Return the front vector here
     }
 };
+
+
 
 #endif // CAMERA_H

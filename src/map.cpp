@@ -186,11 +186,10 @@ void Map::clear() {
 
 
 void Map::render(const Camera& camera, int display_w, int display_h) {
-    // Declare and initialize the light properties
-    glm::vec3 lightDir = camera.useCameraLight ? -camera.getFront() : glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
-    glm::vec3 lightColor = glm::vec3(1.0f);  // White light
-    glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.3f);  // Default object color
     for (const auto& obj : objects) {
+        //std::cout << "Rendering with shader pair: " << obj.vertexShader << " + " << obj.fragmentShader << "\n";
+
+
         GLuint objectShaderProgram = loadShader(obj.vertexShader, obj.fragmentShader);
         glUseProgram(objectShaderProgram);
 
@@ -205,14 +204,58 @@ void Map::render(const Camera& camera, int display_w, int display_h) {
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)display_w / (float)display_h, 0.1f, 100.0f);
         glm::mat4 mvp = projection * view * model;
 
-        glUniformMatrix4fv(glGetUniformLocation(objectShaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
-        glUniformMatrix4fv(glGetUniformLocation(objectShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        // Matrix uniforms
+        GLint mvpLoc = glGetUniformLocation(objectShaderProgram, "MVP");
+        if (mvpLoc != -1) {
+            glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+        } else {
+            std::cerr << "'MVP' uniform not found in shader " << obj.fragmentShader << "\n";
+        }
+
+        GLint modelLoc = glGetUniformLocation(objectShaderProgram, "model");
+        if (modelLoc != -1) {
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        } else {
+            //std::cerr << "'model' uniform not found in shader " << obj.fragmentShader << "\n";
+        }
 
         // Lighting
-        // Pass light information to the shader
-        glUniform3fv(glGetUniformLocation(objectShaderProgram, "lightDir"), 1, glm::value_ptr(lightDir));
-        glUniform3fv(glGetUniformLocation(objectShaderProgram, "lightColor"), 1, glm::value_ptr(lightColor));
-        glUniform3fv(glGetUniformLocation(objectShaderProgram, "objectColor"), 1, glm::value_ptr(objectColor));
+        //glm::vec3 lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
+        //glm::vec3 lightDir = camera.useCameraLight ? -camera.getFront() : glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
+        glm::vec3 lightDir;
+        if (camera.useCameraLight) {
+            lightDir = -camera.getFront();  // Use camera's front vector if enabled
+        } else {
+            lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));  // Static light direction
+        }
+        glm::vec3 lightColor = glm::vec3(1.0f);
+        glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.3f);
+
+        GLint lightDirLoc = glGetUniformLocation(objectShaderProgram, "lightDir");
+        if (lightDirLoc != -1) {
+            glUniform3fv(lightDirLoc, 1, glm::value_ptr(lightDir));
+        } else {
+            //std::cerr << "'lightDir' uniform not found in shader " << obj.fragmentShader << "\n";
+        }
+
+        GLint lightColorLoc = glGetUniformLocation(objectShaderProgram, "lightColor");
+        if (lightColorLoc != -1) {
+            glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
+        } else {
+            //std::cerr << "'lightColor' uniform not found in shader " << obj.fragmentShader << "\n";
+        }
+
+        GLint objectColorLoc = glGetUniformLocation(objectShaderProgram, "objectColor");
+        if (objectColorLoc != -1) {
+            glUniform3fv(objectColorLoc, 1, glm::value_ptr(objectColor));
+        } else {
+            //std::cerr << "'objectColor' uniform not found in shader " << obj.fragmentShader << "\n";
+        }
+        //std::cout << "model matrix[0][0]: " << model[0][0] << "\n"; //debug print
+        //std::cout << "lightDir: " << lightDir.x << ", " << lightDir.y << ", " << lightDir.z << "\n"; //debug print
+
+        // Draw
         obj.mesh.render();
     }
 }
+

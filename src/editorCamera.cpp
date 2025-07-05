@@ -15,6 +15,7 @@ EditorCamera camera;
 EditorCamera::EditorCamera(float yaw, float pitch, float distance)
     : yaw(yaw), pitch(pitch), distance(distance), target(0.0f), up(0.0f, 1.0f, 0.0f)
 {
+    std::cout << "[EditorCamera] Constructor called\n";
     updateCameraVectors();
 }
 
@@ -51,7 +52,8 @@ void EditorCamera::updateCameraVectors() {
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     front = glm::normalize(direction);
 
-    position = target - direction * distance;
+    // Camera orbits around target
+    position = target - front * distance;
 }
 
 std::vector<float> EditorCamera::generateXZGridLines(float size, int divisions) {

@@ -60,6 +60,8 @@ std::string loadShaderSource(const std::string& filename) {
         return "";
     }
 
+    std::cout << "Successfully loaded shader: " << shaderPath.string() << std::endl;
+
     std::stringstream buffer;
     buffer << shaderFile.rdbuf();
     return buffer.str();
