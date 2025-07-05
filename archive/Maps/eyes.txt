@@ -1,0 +1,2 @@
+"NewObject" "Sphere" 0 1 0 0 0 0 1.1 1 1 "eyes.vert" "eyes.frag"
+"NewObject(1)" "Sphere" -2.456 1 0 0 0 0 1.1 1 1 "eyes.vert" "eyes.frag"
