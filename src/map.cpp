@@ -186,6 +186,10 @@ void Map::clear() {
 
 
 void Map::render(const Camera& camera, int display_w, int display_h) {
+    // Declare and initialize the light properties
+    glm::vec3 lightDir = camera.useCameraLight ? -camera.getFront() : glm::normalize(glm::vec3(0.5f, 1.0f, 0.3f));
+    glm::vec3 lightColor = glm::vec3(1.0f);  // White light
+    glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.3f);  // Default object color
     for (const auto& obj : objects) {
         GLuint objectShaderProgram = loadShader(obj.vertexShader, obj.fragmentShader);
         glUseProgram(objectShaderProgram);
@@ -204,6 +208,11 @@ void Map::render(const Camera& camera, int display_w, int display_h) {
         glUniformMatrix4fv(glGetUniformLocation(objectShaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
         glUniformMatrix4fv(glGetUniformLocation(objectShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
+        // Lighting
+        // Pass light information to the shader
+        glUniform3fv(glGetUniformLocation(objectShaderProgram, "lightDir"), 1, glm::value_ptr(lightDir));
+        glUniform3fv(glGetUniformLocation(objectShaderProgram, "lightColor"), 1, glm::value_ptr(lightColor));
+        glUniform3fv(glGetUniformLocation(objectShaderProgram, "objectColor"), 1, glm::value_ptr(objectColor));
         obj.mesh.render();
     }
 }

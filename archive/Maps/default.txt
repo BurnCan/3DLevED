@@ -1,5 +1,5 @@
-"West Cube" "Cube" -1 0.5 0 0 0 0 1 1 1
-"North Cube" "Cube" 0 0.5 -1 0 0 0 1 1 1
-"East Cube" "Cube" 1 0.5 0 0 0 0 1 1 1
-"South Cube" "Cube" 0 0.5 1 0 0 0 1 1 1
-"Sphere" "Sphere" 0 1.2 0 0 0 0 1 1 1
+"West Cube" "Cube" -1 0.5 0 0 0 0 1 1 1 "basic.vert" "basic.frag"
+"North Cube" "Cube" 0 0.5 -1 0 0 0 1 1 1 "basic.vert" "basic.frag"
+"East Cube" "Cube" 1 0.5 0 0 0 0 1 1 1 "basic.vert" "basic.frag"
+"South Cube" "Cube" 0 0.5 1 0 0 0 1 1 1 "basic.vert" "basic.frag"
+"Sphere" "Sphere" 0 1.2 0 0 0 0 1 1 1 "basic.vert" "basic.frag"

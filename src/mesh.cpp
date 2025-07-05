@@ -1,5 +1,4 @@
 #include "mesh.h"
-#include "mesh.h"
 #include <iostream>
 #include "ShapeFactory.h"
 Mesh::Mesh() : VAO(0), VBO(0), vertexCount(0) {}

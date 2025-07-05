@@ -10,7 +10,7 @@
 class EditorCamera : public Camera {
 public:
     bool invertPitch = true;
-    bool useCameraLight = true;
+    bool useCameraLight = true;  // Used to control lighting from camera's perspective
     bool showGrid = true;
 
     EditorCamera(float yaw = -90.0f, float pitch = 0.0f, float distance = 5.0f);
@@ -41,7 +41,7 @@ private:
     void initGrid();
     void setupGridShader();
 
-    glm::vec3 front;
+    glm::vec3 front;  // Camera's front vector for direction
     float yaw;
     float pitch;
     float distance;
@@ -52,6 +52,8 @@ private:
 
     void updateCameraVectors();
 };
+
+
 
 extern EditorCamera camera;
 

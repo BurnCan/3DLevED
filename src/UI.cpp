@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 #include <GLFW/glfw3.h>
+#include <unordered_set>
 
 static char mapFilename[128] = "default.txt";
 static bool showSavePopup = false;
@@ -18,6 +19,29 @@ static bool showLoadPopup = false;
 static Map mapBuffer;
 //Tracks loaded map filename
 static std::string loadedMapFilename = "";
+
+// Place this near the top of UI.cpp
+static std::vector<std::string> shaderBaseNames;
+
+void GenerateShaderBaseNames() {
+    std::unordered_set<std::string> vertNames, fragNames;
+
+    for (const auto& shaderPath : shaders) {
+        std::string stem = shaderPath.stem().string();
+        if (shaderPath.extension() == ".vert") {
+            vertNames.insert(stem);
+        } else if (shaderPath.extension() == ".frag") {
+            fragNames.insert(stem);
+        }
+    }
+
+    shaderBaseNames.clear();
+    for (const auto& name : vertNames) {
+        if (fragNames.count(name)) {
+            shaderBaseNames.push_back(name);
+        }
+    }
+}
 
 Map& UI::GetMapBuffer() {
     return mapBuffer;
@@ -195,38 +219,27 @@ void UI::RenderMapEditor(Map& mapBuffer) {
                 continue;
             }
 
-           ImGui::Text("Shaders");
-ImGui::SameLine();
+           // Call this once when the UI is about to render
+GenerateShaderBaseNames();
 
-// Vertex Shader Combo Box
-ImGui::SetNextItemWidth(120);
-if (ImGui::BeginCombo("Vertex Shader", std::filesystem::path(obj.vertexShader).filename().string().c_str())) {
-    for (const auto& shaderPath : shaders) {
-        std::string filename = shaderPath.filename().string();
-        bool isSelected = (obj.vertexShader == filename);  // Match by filename
+// Example inside your ImGui loop:
+ImGui::Text("Shader Pair");
+ImGui::SetNextItemWidth(200);
 
-        if (ImGui::Selectable(filename.c_str(), isSelected)) {
-            obj.vertexShader = filename;  // Store only the filename
+std::string currentPair = std::filesystem::path(obj.vertexShader).stem().string();
+
+if (ImGui::BeginCombo("Shader", currentPair.c_str())) {
+    for (const auto& base : shaderBaseNames) {
+        bool isSelected = (base == currentPair);
+        if (ImGui::Selectable(base.c_str(), isSelected)) {
+            obj.vertexShader = base + ".vert";
+            obj.fragmentShader = base + ".frag";
         }
     }
     ImGui::EndCombo();
 }
 
-ImGui::SameLine();
 
-// Fragment Shader Combo Box
-ImGui::SetNextItemWidth(120);
-if (ImGui::BeginCombo("Fragment Shader", std::filesystem::path(obj.fragmentShader).filename().string().c_str())) {
-    for (const auto& shaderPath : shaders) {
-        std::string filename = shaderPath.filename().string();
-        bool isSelected = (obj.fragmentShader == filename);
-
-        if (ImGui::Selectable(filename.c_str(), isSelected)) {
-            obj.fragmentShader = filename;
-        }
-    }
-    ImGui::EndCombo();
-}
 
 
             ImGui::Text("Position");
