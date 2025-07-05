@@ -231,6 +231,13 @@ void Map::render(const Camera& camera, int display_w, int display_h) {
         glm::vec3 lightColor = glm::vec3(1.0f);
         glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.3f);
 
+        // Set 'time' uniform for animation effects
+        float time = static_cast<float>(glfwGetTime());
+        GLint timeLoc = glGetUniformLocation(objectShaderProgram, "time");
+        if (timeLoc != -1) {
+            glUniform1f(timeLoc, time);
+        }
+
         GLint lightDirLoc = glGetUniformLocation(objectShaderProgram, "lightDir");
         if (lightDirLoc != -1) {
             glUniform3fv(lightDirLoc, 1, glm::value_ptr(lightDir));
