@@ -367,6 +367,26 @@ ImGui::PopID();
         ImGui::EndCombo();
     }
 
+    static std::string selectedShaderBase = "basic";  // Default shader base
+
+    // Generate list of available shader pairs (if not done already)
+    GenerateShaderBaseNames();
+
+
+    ImGui::SetNextItemWidth(200);
+
+    if (ImGui::BeginCombo("Shader##NewObject", selectedShaderBase.c_str())) {
+        for (const auto& base : shaderBaseNames) {
+            bool isSelected = (base == selectedShaderBase);
+            if (ImGui::Selectable(base.c_str(), isSelected)) {
+                selectedShaderBase = base;
+            }
+            if (isSelected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
     if (ImGui::Button("Add Object")) {
         std::string shape = shapeOptions[currentShapeIndex];
         std::string baseName = objectName;
@@ -385,7 +405,7 @@ ImGui::PopID();
             }
         }
 
-        Map::MapObject newObj(finalName, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f), "basic.vert", "basic.frag");
+        Map::MapObject newObj(finalName, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f), selectedShaderBase + ".vert", selectedShaderBase + ".frag");
         newObj.mesh = generateMeshForType(shape, 1.0f);
         mapBuffer.addObject(newObj);
         std::cout << "Added object: " << finalName << " of type " << shape << std::endl;
