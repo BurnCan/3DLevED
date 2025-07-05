@@ -9,7 +9,7 @@ uniform vec3 lightColor;
 
 void main() {
     // Basic diffuse lighting
-    float intensity = max(dot(normalize(Normal), normalize(-lightDir)), 0.0);
+    float intensity = max(dot(normalize(Normal), normalize(lightDir)), 0.0);
 
     // Generate rainbow based on normal direction
     vec3 rainbow = 0.5 + 0.5 * sin(Normal * 10.0 + vec3(0.0, 2.0, 4.0));
