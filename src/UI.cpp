@@ -348,7 +348,7 @@ ImGui::PopID();
     }
 
     // === Add Object ===
-    static const char* shapeOptions[] = { "Cube", "Sphere" };
+    static const char* shapeOptions[] = { "Cube", "Sphere", "Pyramid" };
     static int currentShapeIndex = 0;
     static char objectName[64] = "NewObject";
 

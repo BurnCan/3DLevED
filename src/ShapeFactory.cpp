@@ -102,3 +102,74 @@ Mesh createSphere(float radius, int sectors, int stacks) {
     mesh.setVertices(vertices);  //  Correct way to upload data
     return mesh;
 }
+
+Mesh createPyramid(float size) {
+    Mesh mesh;
+    std::vector<float> vertices;
+
+    float h = size;             // height
+    float half = size / 2.0f;   // half base width
+
+    glm::vec3 top(0.0f, h, 0.0f);
+
+    // Base (two triangles)
+    glm::vec3 v0(-half, 0.0f, -half);
+    glm::vec3 v1( half, 0.0f, -half);
+    glm::vec3 v2( half, 0.0f,  half);
+    glm::vec3 v3(-half, 0.0f,  half);
+
+    glm::vec3 baseNormal(0.0f, -1.0f, 0.0f);
+    // Triangle 1
+    vertices.insert(vertices.end(), {
+        v0.x, v0.y, v0.z, baseNormal.x, baseNormal.y, baseNormal.z,
+        v1.x, v1.y, v1.z, baseNormal.x, baseNormal.y, baseNormal.z,
+        v2.x, v2.y, v2.z, baseNormal.x, baseNormal.y, baseNormal.z
+    });
+    // Triangle 2
+    vertices.insert(vertices.end(), {
+        v2.x, v2.y, v2.z, baseNormal.x, baseNormal.y, baseNormal.z,
+        v3.x, v3.y, v3.z, baseNormal.x, baseNormal.y, baseNormal.z,
+        v0.x, v0.y, v0.z, baseNormal.x, baseNormal.y, baseNormal.z
+    });
+
+    // Helper to compute normal for side triangles
+    auto computeNormal = [](glm::vec3 a, glm::vec3 b, glm::vec3 c) -> glm::vec3 {
+        return glm::normalize(glm::cross(b - a, c - a));
+    };
+
+    // Side 1 (v0, v1, top)
+    glm::vec3 n1 = computeNormal(v0, v1, top);
+    vertices.insert(vertices.end(), {
+        v0.x, v0.y, v0.z, n1.x, n1.y, n1.z,
+        v1.x, v1.y, v1.z, n1.x, n1.y, n1.z,
+        top.x, top.y, top.z, n1.x, n1.y, n1.z
+    });
+
+    // Side 2 (v1, v2, top)
+    glm::vec3 n2 = computeNormal(v1, v2, top);
+    vertices.insert(vertices.end(), {
+        v1.x, v1.y, v1.z, n2.x, n2.y, n2.z,
+        v2.x, v2.y, v2.z, n2.x, n2.y, n2.z,
+        top.x, top.y, top.z, n2.x, n2.y, n2.z
+    });
+
+    // Side 3 (v2, v3, top)
+    glm::vec3 n3 = computeNormal(v2, v3, top);
+    vertices.insert(vertices.end(), {
+        v2.x, v2.y, v2.z, n3.x, n3.y, n3.z,
+        v3.x, v3.y, v3.z, n3.x, n3.y, n3.z,
+        top.x, top.y, top.z, n3.x, n3.y, n3.z
+    });
+
+    // Side 4 (v3, v0, top)
+    glm::vec3 n4 = computeNormal(v3, v0, top);
+    vertices.insert(vertices.end(), {
+        v3.x, v3.y, v3.z, n4.x, n4.y, n4.z,
+        v0.x, v0.y, v0.z, n4.x, n4.y, n4.z,
+        top.x, top.y, top.z, n4.x, n4.y, n4.z
+    });
+
+    mesh.setVertices(vertices);
+    return mesh;
+}
+

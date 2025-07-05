@@ -35,6 +35,9 @@ Mesh generateMeshForType(const std::string& type, float scale) {
     else if (type == "Sphere") {
         return createSphere(scale, 36, 18);
     }
+    else if (type == "Pyramid") {
+        return createPyramid(scale);
+    }
     else {
         std::cerr << "Unknown shape type: " << type << std::endl;
         return Mesh(); // Return empty fallback mesh
