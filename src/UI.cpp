@@ -529,7 +529,7 @@ void UI::RenderShaderUtility(const glm::mat4& mvp) {
 void UI::RenderMazeGenerator(Map& mapBuffer) {
     static int mazeWidth = 5;
     static int mazeDepth = 5;
-    static float cellSize = 2.0f;
+    static float cellSize = 1.0f;
     static float floorHeight = 0.0f;  // Default Y position of the floor
     static std::string selectedShaderBase = "basic";
 

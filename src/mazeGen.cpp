@@ -5,13 +5,17 @@
 void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, float floorHeight, const std::string& shaderBase) {
     mapBuffer.clear();  // Start fresh
 
+    //for shifting the maze to center it (over x0 z0 for example)
+    float offsetX = -((width - 1) * cellSize) / 2.0f;
+    float offsetZ = -((depth - 1) * cellSize) / 2.0f;
+
     // Wall flags: all walls up initially
     std::vector<std::vector<bool>> horizontalWalls(depth + 1, std::vector<bool>(width, true));
     std::vector<std::vector<bool>> verticalWalls(depth, std::vector<bool>(width + 1, true));
 
     for (int z = 0; z < depth; ++z) {
     for (int x = 0; x < width; ++x) {
-        glm::vec3 basePos = glm::vec3(x * cellSize, floorHeight, z * cellSize);
+        glm::vec3 basePos = glm::vec3(x * cellSize + offsetX, floorHeight, z * cellSize + offsetZ);
 
         // === Floor ===
         Map::MapObject floorObj("floor", "Floor", basePos, glm::vec3(0.0f),
