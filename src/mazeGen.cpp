@@ -19,7 +19,7 @@ void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, const st
             floorObj.mesh = generateMeshForType("Cube", 1.0f); // Assign mesh
             mapBuffer.addObject(floorObj);
 
-            // Right wall
+            //// Right border
             if (verticalWalls[z][x + 1]) {
                 Map::MapObject rightWallObj("depthWall", "DepthWall",
                     basePos + glm::vec3(cellSize / 2.0f, 0.5f, 0.0f),
@@ -29,7 +29,7 @@ void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, const st
                 mapBuffer.addObject(rightWallObj);
             }
 
-            // Bottom wall
+            // Bottom border
             if (horizontalWalls[z + 1][x]) {
                 Map::MapObject bottomWallObj("widthWall", "WidthWall",
                     basePos + glm::vec3(0.0f, 0.5f, cellSize / 2.0f),
@@ -38,27 +38,27 @@ void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, const st
                 bottomWallObj.mesh = generateMeshForType("Cube", 1.0f); // Assign mesh
                 mapBuffer.addObject(bottomWallObj);
             }
+
+            // Top border (z = 0 row)
+            for (int x = 0; x < width; ++x) {
+                glm::vec3 pos = glm::vec3(x * cellSize, 0.5f, 0.0f - (cellSize / 2.0f));
+                Map::MapObject topWallObj("topWall", "WidthWall", pos,
+                    glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 0.1f),
+                    shaderBase + ".vert", shaderBase + ".frag");
+                topWallObj.mesh = generateMeshForType("Cube", 1.0f);
+                mapBuffer.addObject(topWallObj);
+            }
+
+            // Left border (x = 0 column)
+            for (int z = 0; z < depth; ++z) {
+                glm::vec3 pos = glm::vec3(0.0f - (cellSize / 2.0f), 0.5f, z * cellSize);
+                Map::MapObject leftWallObj("leftWall", "DepthWall", pos,
+                    glm::vec3(0.0f), glm::vec3(0.1f, 1.0f, 1.0f),
+                    shaderBase + ".vert", shaderBase + ".frag");
+                leftWallObj.mesh = generateMeshForType("Cube", 1.0f);
+                mapBuffer.addObject(leftWallObj);
+            }
         }
-    }
-
-    // Right border
-    for (int z = 0; z < depth; ++z) {
-        glm::vec3 pos = glm::vec3(width * cellSize, 0.5f, z * cellSize);
-        Map::MapObject rightBorderObj("rightWall", "DepthWall", pos,
-            glm::vec3(0.0f), glm::vec3(0.1f, 1.0f, 1.0f),
-            shaderBase + ".vert", shaderBase + ".frag");
-        rightBorderObj.mesh = generateMeshForType("Cube", 1.0f); // Assign mesh
-        mapBuffer.addObject(rightBorderObj);
-    }
-
-    // Bottom border
-    for (int x = 0; x < width; ++x) {
-        glm::vec3 pos = glm::vec3(x * cellSize, 0.5f, depth * cellSize);
-        Map::MapObject bottomBorderObj("bottomWall", "WidthWall", pos,
-            glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 0.1f),
-            shaderBase + ".vert", shaderBase + ".frag");
-        bottomBorderObj.mesh = generateMeshForType("Cube", 1.0f); // Assign mesh
-        mapBuffer.addObject(bottomBorderObj);
     }
 
     std::cout << "Maze generated in mazeGen.cpp: " << width << " x " << depth << std::endl;
