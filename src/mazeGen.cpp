@@ -22,7 +22,7 @@ void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, float fl
         // === Right Wall ===
         if (verticalWalls[z][x + 1]) {
             glm::vec3 wallPos = basePos + glm::vec3(cellSize / 2.0f, 0.5f, 0.0f);
-            wallPos.y += floorHeight;
+            wallPos.y = floorHeight + (0.5);
             Map::MapObject rightWallObj("depthWall", "DepthWall", wallPos,
                 glm::vec3(0.0f), glm::vec3(0.1f, 1.0f, 1.0f),
                 shaderBase + ".vert", shaderBase + ".frag");
@@ -33,7 +33,7 @@ void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, float fl
         // === Bottom Wall ===
         if (horizontalWalls[z + 1][x]) {
             glm::vec3 wallPos = basePos + glm::vec3(0.0f, 0.5f, cellSize / 2.0f);
-            wallPos.y += floorHeight;
+            wallPos.y = floorHeight + (0.5);
             Map::MapObject bottomWallObj("widthWall", "WidthWall", wallPos,
                 glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 0.1f),
                 shaderBase + ".vert", shaderBase + ".frag");
@@ -44,7 +44,7 @@ void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, float fl
         // === Left Wall (for x == 0) ===
         if (x == 0 && verticalWalls[z][x]) {
             glm::vec3 wallPos = basePos + glm::vec3(-cellSize / 2.0f, 0.5f, 0.0f);
-            wallPos.y += floorHeight;
+            wallPos.y = floorHeight + (0.5);
             Map::MapObject leftWallObj("leftWall", "DepthWall", wallPos,
                 glm::vec3(0.0f), glm::vec3(0.1f, 1.0f, 1.0f),
                 shaderBase + ".vert", shaderBase + ".frag");
@@ -55,7 +55,7 @@ void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, float fl
         // === Top Wall (for z == 0) ===
         if (z == 0 && horizontalWalls[z][x]) {
             glm::vec3 wallPos = basePos + glm::vec3(0.0f, 0.5f, -cellSize / 2.0f);
-            wallPos.y += floorHeight;
+            wallPos.y = floorHeight + (0.5);
             Map::MapObject topWallObj("topWall", "WidthWall", wallPos,
                 glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 0.1f),
                 shaderBase + ".vert", shaderBase + ".frag");
