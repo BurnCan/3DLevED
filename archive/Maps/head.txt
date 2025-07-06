@@ -1,0 +1,4 @@
+"NewObject" "WidthWall" 1.5 0.5 0 0 0 0 0.913 1 0.882 "basic.vert" "basic.frag"
+"NewObject(1)" "Sphere" 1.4 0 0 0 0 0 1 1 1 "basic.vert" "basic.frag"
+"eye1" "Sphere" 0.7 0.5 -0.33 0 0 0 0.25 0.25 0.25 "eyes.vert" "eyes.frag"
+"eye2" "Sphere" 0.7 0.5 0.33 0 0 0 0.25 0.25 0.25 "eyes.vert" "eyes.frag"

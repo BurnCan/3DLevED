@@ -13,6 +13,7 @@
 #include <string>
 #include <GLFW/glfw3.h>
 #include <unordered_set>
+#include "mazeGen.h"
 
 static char mapFilename[128] = "default.txt";
 static bool showSavePopup = false;
@@ -23,6 +24,8 @@ static std::string loadedMapFilename = "";
 
 // Place this near the top of UI.cpp
 static std::vector<std::string> shaderBaseNames;
+
+
 
 void GenerateShaderBaseNames() {
     std::unordered_set<std::string> vertNames, fragNames;
@@ -523,7 +526,39 @@ void UI::RenderShaderUtility(const glm::mat4& mvp) {
     }
 
 
+void UI::RenderMazeGenerator(Map& mapBuffer) {
+    static int mazeWidth = 5;
+    static int mazeDepth = 5;
+    static float cellSize = 2.0f;
+    static std::string selectedShaderBase = "basic";
 
+    ImGui::Begin("Maze Generator");
+
+    ImGui::SliderInt("Maze Width", &mazeWidth, 1, 50);
+    ImGui::SliderInt("Maze Depth", &mazeDepth, 1, 50);
+    ImGui::SliderFloat("Cell Size", &cellSize, 0.5f, 10.0f);
+
+    GenerateShaderBaseNames(); // Ensure shader list is populated
+
+    ImGui::SetNextItemWidth(200);
+    if (ImGui::BeginCombo("Shader", selectedShaderBase.c_str())) {
+        for (const auto& base : shaderBaseNames) {
+            bool isSelected = (base == selectedShaderBase);
+            if (ImGui::Selectable(base.c_str(), isSelected)) {
+                selectedShaderBase = base;
+            }
+            if (isSelected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    if (ImGui::Button("Generate Maze")) {
+        GenerateMaze(mapBuffer, mazeWidth, mazeDepth, cellSize, selectedShaderBase);
+    }
+
+    ImGui::End();
+}
 
 
 

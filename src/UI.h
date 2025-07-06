@@ -13,9 +13,10 @@ namespace UI {
     // Update these to match definitions in UI.cpp
     void RenderMainMenuBar(Map& mapBuffer, GLFWwindow* window);
     void RenderMapEditor(Map& mapBuffer);  // Add Map& parameter
-
+    void RenderMazeGenerator(Map& mapBuffer);
     void RenderShaderUtility(const glm::mat4& mvp);
     void RenderCameraDebugWindow();
+
 
     void Shutdown();
 

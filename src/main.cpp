@@ -22,6 +22,7 @@
 #include "ShapeFactory.h"
 #include "map.h"
 #include "UI.h"
+#include "mazeGen.h"
 
 
 // Window dimensions
@@ -147,6 +148,7 @@ int main()
     UI::RenderMapEditor(mapBuffer);
     UI::RenderShaderUtility(mvp);
     UI::RenderCameraDebugWindow();
+    UI::RenderMazeGenerator(mapBuffer);
 
     // Grid (uses its own shader)
     camera.renderGrid(mvp);
