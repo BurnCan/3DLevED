@@ -1,6 +1,7 @@
 #include "UI.h"
 #include "map.h"
 #include "mesh.h"
+#include "ShapeFactory.h"
 #include "shader_utility.h"
 #include "editorCamera.h"  // Needed for access to camera state flags
 #include "imgui.h"
@@ -348,7 +349,7 @@ ImGui::PopID();
     }
 
     // === Add Object ===
-    static const char* shapeOptions[] = { "Cube", "Sphere", "Pyramid" };
+    static const char* shapeOptions[] = { "Cube", "Sphere", "Pyramid", "WidthWall", "DepthWall", "Floor" };
     static int currentShapeIndex = 0;
     static char objectName[64] = "NewObject";
 
@@ -390,6 +391,8 @@ ImGui::PopID();
     if (ImGui::Button("Add Object")) {
         std::string shape = shapeOptions[currentShapeIndex];
         std::string baseName = objectName;
+        glm::vec3 position = glm::vec3(0.0f); //Default position
+        glm::vec3 scale = glm::vec3(1.0f); // Default scale
         std::string finalName = baseName;
 
         int suffix = 1;
@@ -404,12 +407,33 @@ ImGui::PopID();
                 }
             }
         }
+        //////////////////////////////
+        //glm::vec3 scale(1.0f);  // Default scale
+        const Mesh& mesh = getUnitCubeMesh(); // Use unit cube for all new shapes
 
-        Map::MapObject newObj(finalName, shape, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f), selectedShaderBase + ".vert", selectedShaderBase + ".frag");
+       if (shape == "WidthWall") {
+            scale = glm::vec3(1.0f, 1.0f, 0.1f);
+            position = glm::vec3(0.0f, 0.5f, 0.0f);
+        }
+        else if (shape == "DepthWall") {
+            scale = glm::vec3(0.1f, 1.0f, 1.0f);
+            position = glm::vec3(0.0f, 0.5f, 0.0f);
+        }
+        else if (shape == "Floor") {
+            scale = glm::vec3(1.0f, 0.1f, 1.0f);
+            position = glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+                else if (shape == "Cube" || shape == "Sphere" || shape == "Pyramid") {
+                    // Keep scale uniform for standard primitives
+                    scale = glm::vec3(1.0f);
+                }
+
+        Map::MapObject newObj(finalName, shape, position, glm::vec3(0.0f), scale,
+                      selectedShaderBase + ".vert", selectedShaderBase + ".frag");
         newObj.mesh = generateMeshForType(shape, 1.0f);
         mapBuffer.addObject(newObj);
-        std::cout << "Added object: " << finalName << " of type " << shape << std::endl;
-    }
+                std::cout << "Added object: " << finalName << " of type " << shape << std::endl;
+            }
 
     ImGui::Separator();
     if (ImGui::Button("Save Map")) {

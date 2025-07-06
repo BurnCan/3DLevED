@@ -7,4 +7,9 @@ Mesh createPyramid(float size);
 Mesh createCube(float size);
 Mesh createSphere(float radius, int sectors, int stacks);
 
+// Central mesh generation dispatch
+Mesh generateMeshForType(const std::string& type, float scale);
+// Reusable unit cube mesh for scalable shapes like walls/floors
+const Mesh& getUnitCubeMesh();
+
 #endif

@@ -59,6 +59,31 @@ Mesh createCube(float size) {
     mesh.setVertices(vertices);  //  Use this instead of accessing mesh.vertices directly
     return mesh;
 }
+// Utility to reuse cube mesh
+const Mesh& getUnitCubeMesh() {
+    static Mesh unitCube = createCube(1.0f);
+    return unitCube;
+}
+
+////////
+Mesh createWidthWall(float size) {
+    Mesh mesh;
+    mesh = createCube(size);  // Reuse cube geometry
+    return mesh;
+}
+
+Mesh createDepthWall(float size) {
+    Mesh mesh;
+    mesh = createCube(size);  // Reuse cube geometry
+    return mesh;
+}
+
+Mesh createFloorTile(float size) {
+    Mesh mesh;
+    mesh = createCube(size);  // Reuse cube geometry
+    return mesh;
+}
+/////////
 
 Mesh createSphere(float radius, int sectors, int stacks) {
     Mesh mesh;

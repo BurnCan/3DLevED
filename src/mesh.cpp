@@ -1,6 +1,8 @@
 #include "mesh.h"
 #include <iostream>
 #include "ShapeFactory.h"
+#include <unordered_map>
+#include <functional>
 Mesh::Mesh() : VAO(0), VBO(0), vertexCount(0) {}
 
 void Mesh::setVertices(const std::vector<float>& data) {
@@ -29,16 +31,19 @@ void Mesh::initBuffers() {
 }
 
 Mesh generateMeshForType(const std::string& type, float scale) {
-    if (type == "Cube") {
-        return createCube(scale);
-    }
-    else if (type == "Sphere") {
-        return createSphere(scale, 36, 18);
-    }
-    else if (type == "Pyramid") {
-        return createPyramid(scale);
-    }
-    else {
+    static const std::unordered_map<std::string, std::function<Mesh(float)>> meshGenerators = {
+        { "Cube",    createCube },
+        { "Sphere",  [](float s) { return createSphere(s, 36, 18); } },
+        { "Pyramid", createPyramid },
+        { "WidthWall", createCube },     // Same mesh, scale changes later
+        { "DepthWall", createCube },
+        { "Floor", createCube }
+    };
+
+    auto it = meshGenerators.find(type);
+    if (it != meshGenerators.end()) {
+        return it->second(scale);
+    } else {
         std::cerr << "Unknown shape type: " << type << std::endl;
         return Mesh(); // Return empty fallback mesh
     }
