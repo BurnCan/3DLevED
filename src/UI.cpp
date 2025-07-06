@@ -530,13 +530,18 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
     static int mazeWidth = 5;
     static int mazeDepth = 5;
     static float cellSize = 2.0f;
+    static float floorHeight = 0.0f;  // Default Y position of the floor
     static std::string selectedShaderBase = "basic";
 
     ImGui::Begin("Maze Generator");
 
-    ImGui::SliderInt("Maze Width", &mazeWidth, 1, 50);
-    ImGui::SliderInt("Maze Depth", &mazeDepth, 1, 50);
-    ImGui::SliderFloat("Cell Size", &cellSize, 0.5f, 10.0f);
+    ImGui::InputInt("Maze Width", &mazeWidth, 1, 50);
+    ImGui::InputInt("Maze Depth", &mazeDepth, 1, 50);
+    ImGui::InputFloat("Cell Size", &cellSize, 0.5f, 10.0f);
+    ImGui::InputFloat("Floor Height", &floorHeight, -5.0f, 5.0f);  // Add this below cellSize
+
+
+
 
     GenerateShaderBaseNames(); // Ensure shader list is populated
 
@@ -554,7 +559,7 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
     }
 
     if (ImGui::Button("Generate Maze")) {
-        GenerateMaze(mapBuffer, mazeWidth, mazeDepth, cellSize, selectedShaderBase);
+        GenerateMaze(mapBuffer, mazeWidth, mazeDepth, cellSize, floorHeight, selectedShaderBase);
     }
 
     ImGui::End();
