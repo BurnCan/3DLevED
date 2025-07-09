@@ -1,117 +1,105 @@
 #include "mazeGen.h"
+#include "map.h"
+#include "ShapeFactory.h"
+
 #include <glm/glm.hpp>
+#include <vector>
+#include <random>
+#include <algorithm>
 #include <iostream>
 
-void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, float floorHeight, const std::string& shaderBase) {
-    mapBuffer.clear();  // Start fresh
+static void carveMaze(int x, int z, int width, int depth,
+                      std::vector<std::vector<bool>>& visited,
+                      std::vector<std::vector<bool>>& verticalWalls,
+                      std::vector<std::vector<bool>>& horizontalWalls) {
+    visited[z][x] = true;
 
-    //for shifting the maze to center it (over x0 z0 for example)
-    float offsetX = -((width - 1) * cellSize) / 2.0f;
-    float offsetZ = -((depth - 1) * cellSize) / 2.0f;
+    std::vector<std::pair<int, int>> directions = {
+        {0, -1}, {1, 0}, {0, 1}, {-1, 0}  // Up, Right, Down, Left
+    };
 
-    // Wall flags: all walls up initially
-    std::vector<std::vector<bool>> horizontalWalls(depth + 1, std::vector<bool>(width, true));
-    std::vector<std::vector<bool>> verticalWalls(depth, std::vector<bool>(width + 1, true));
+    std::shuffle(directions.begin(), directions.end(), std::mt19937{ std::random_device{}() });
 
-    for (int z = 0; z < depth; ++z) {
-    for (int x = 0; x < width; ++x) {
-        glm::vec3 basePos = glm::vec3(x * cellSize + offsetX, floorHeight, z * cellSize + offsetZ);
+    for (auto [dx, dz] : directions) {
+        int nx = x + dx;
+        int nz = z + dz;
 
-        // === Floor ===
-        Map::MapObject floorObj("floor", "Floor", basePos, glm::vec3(0.0f),
-            glm::vec3(1.0f, 0.1f, 1.0f), shaderBase + ".vert", shaderBase + ".frag");
-        floorObj.mesh = generateMeshForType("Cube", 1.0f);
-        mapBuffer.addObject(floorObj);
+        if (nx >= 0 && nx < width && nz >= 0 && nz < depth && !visited[nz][nx]) {
+            if (dx == 1)       verticalWalls[z][x + 1] = false; // remove right wall
+            else if (dx == -1) verticalWalls[z][x] = false;     // remove left wall
+            else if (dz == 1)  horizontalWalls[z + 1][x] = false; // remove bottom wall
+            else if (dz == -1) horizontalWalls[z][x] = false;     // remove top wall
 
-        // === Right Wall ===
-        if (verticalWalls[z][x + 1]) {
-            glm::vec3 wallPos = basePos + glm::vec3(cellSize / 2.0f, 0.5f, 0.0f);
-            wallPos.y = floorHeight + (0.5);
-            Map::MapObject rightWallObj("depthWall", "DepthWall", wallPos,
-                glm::vec3(0.0f), glm::vec3(0.1f, 1.0f, 1.0f),
-                shaderBase + ".vert", shaderBase + ".frag");
-            rightWallObj.mesh = generateMeshForType("Cube", 1.0f);
-            mapBuffer.addObject(rightWallObj);
-        }
-
-        // === Bottom Wall ===
-        if (horizontalWalls[z + 1][x]) {
-            glm::vec3 wallPos = basePos + glm::vec3(0.0f, 0.5f, cellSize / 2.0f);
-            wallPos.y = floorHeight + (0.5);
-            Map::MapObject bottomWallObj("widthWall", "WidthWall", wallPos,
-                glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 0.1f),
-                shaderBase + ".vert", shaderBase + ".frag");
-            bottomWallObj.mesh = generateMeshForType("Cube", 1.0f);
-            mapBuffer.addObject(bottomWallObj);
-        }
-
-        // === Left Wall (for x == 0) ===
-        if (x == 0 && verticalWalls[z][x]) {
-            glm::vec3 wallPos = basePos + glm::vec3(-cellSize / 2.0f, 0.5f, 0.0f);
-            wallPos.y = floorHeight + (0.5);
-            Map::MapObject leftWallObj("leftWall", "DepthWall", wallPos,
-                glm::vec3(0.0f), glm::vec3(0.1f, 1.0f, 1.0f),
-                shaderBase + ".vert", shaderBase + ".frag");
-            leftWallObj.mesh = generateMeshForType("Cube", 1.0f);
-            mapBuffer.addObject(leftWallObj);
-        }
-
-        // === Top Wall (for z == 0) ===
-        if (z == 0 && horizontalWalls[z][x]) {
-            glm::vec3 wallPos = basePos + glm::vec3(0.0f, 0.5f, -cellSize / 2.0f);
-            wallPos.y = floorHeight + (0.5);
-            Map::MapObject topWallObj("topWall", "WidthWall", wallPos,
-                glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 0.1f),
-                shaderBase + ".vert", shaderBase + ".frag");
-            topWallObj.mesh = generateMeshForType("Cube", 1.0f);
-            mapBuffer.addObject(topWallObj);
+            carveMaze(nx, nz, width, depth, visited, verticalWalls, horizontalWalls);
         }
     }
 }
 
-    // === Border Walls ===
+void GenerateMaze(Map& mapBuffer, int width, int depth, float cellSize, float floorHeight, const std::string& shaderBase) {
+    mapBuffer.clear();
 
-    //// Right border
-    //for (int z = 0; z < depth; ++z) {
-        //glm::vec3 pos = glm::vec3(width * cellSize, floorHeight + 0.5f, z * cellSize);
-        //Map::MapObject rightWall("rightWall", "DepthWall", pos,
-            //glm::vec3(0.0f), glm::vec3(0.1f, 1.0f, 1.0f),
-            //shaderBase + ".vert", shaderBase + ".frag");
-        //rightWall.mesh = generateMeshForType("Cube", 1.0f);
-        //mapBuffer.addObject(rightWall);
-    //}
+    // Maze wall layout
+    std::vector<std::vector<bool>> visited(depth, std::vector<bool>(width, false));
+    std::vector<std::vector<bool>> horizontalWalls(depth + 1, std::vector<bool>(width, true));
+    std::vector<std::vector<bool>> verticalWalls(depth, std::vector<bool>(width + 1, true));
 
-    //// Bottom border
-    //for (int x = 0; x < width; ++x) {
-        //glm::vec3 pos = glm::vec3(x * cellSize, floorHeight + 0.5f, depth * cellSize);
-        //Map::MapObject bottomWall("bottomWall", "WidthWall", pos,
-            //glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 0.1f),
-            //shaderBase + ".vert", shaderBase + ".frag");
-        //bottomWall.mesh = generateMeshForType("Cube", 1.0f);
-        //mapBuffer.addObject(bottomWall);
-    //}
+    carveMaze(0, 0, width, depth, visited, verticalWalls, horizontalWalls);
 
-    //// Top border
-    //for (int x = 0; x < width; ++x) {
-        //glm::vec3 pos = glm::vec3(x * cellSize, floorHeight + 0.5f, -cellSize / 2.0f);
-        //Map::MapObject topWall("topWall", "WidthWall", pos,
-            //glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 0.1f),
-            //shaderBase + ".vert", shaderBase + ".frag");
-        //topWall.mesh = generateMeshForType("Cube", 1.0f);
-        //mapBuffer.addObject(topWall);
-    //}
+    // Offset to center maze over origin
+    float offsetX = -(width * cellSize) / 2.0f + cellSize / 2.0f;
+    float offsetZ = -(depth * cellSize) / 2.0f + cellSize / 2.0f;
 
-    //// Left border
-    //for (int z = 0; z < depth; ++z) {
-        //glm::vec3 pos = glm::vec3(-cellSize / 2.0f, floorHeight + 0.5f, z * cellSize);
-        //Map::MapObject leftWall("leftWall", "DepthWall", pos,
-            //glm::vec3(0.0f), glm::vec3(0.1f, 1.0f, 1.0f),
-            //shaderBase + ".vert", shaderBase + ".frag");
-        //leftWall.mesh = generateMeshForType("Cube", 1.0f);
-        //mapBuffer.addObject(leftWall);
-    //}
+    for (int z = 0; z < depth; ++z) {
+        for (int x = 0; x < width; ++x) {
+            glm::vec3 basePos = glm::vec3(x * cellSize + offsetX, floorHeight, z * cellSize + offsetZ);
 
-    std::cout << "Maze generated in mazeGen.cpp: " << width << " x " << depth << std::endl;
+            // Floor tile
+            Map::MapObject floorObj("floor", "Floor", basePos, glm::vec3(0.0f),
+                glm::vec3(1.0f, 0.1f, 1.0f), shaderBase + ".vert", shaderBase + ".frag");
+            floorObj.mesh = generateMeshForType("Cube", 1.0f);
+            mapBuffer.addObject(floorObj);
+
+            // Right wall (shared between this and neighbor)
+            if (verticalWalls[z][x + 1]) {
+                glm::vec3 wallPos = basePos + glm::vec3(cellSize / 2.0f, 0.5f, 0.0f);
+                wallPos.y = floorHeight + 0.5f;
+                Map::MapObject wall("depthWall", "DepthWall", wallPos, glm::vec3(0.0f),
+                    glm::vec3(0.1f, 1.0f, 1.0f), shaderBase + ".vert", shaderBase + ".frag");
+                wall.mesh = generateMeshForType("Cube", 1.0f);
+                mapBuffer.addObject(wall);
+            }
+
+            // Bottom wall
+            if (horizontalWalls[z + 1][x]) {
+                glm::vec3 wallPos = basePos + glm::vec3(0.0f, 0.5f, cellSize / 2.0f);
+                wallPos.y = floorHeight + 0.5f;
+                Map::MapObject wall("widthWall", "WidthWall", wallPos, glm::vec3(0.0f),
+                    glm::vec3(1.0f, 1.0f, 0.1f), shaderBase + ".vert", shaderBase + ".frag");
+                wall.mesh = generateMeshForType("Cube", 1.0f);
+                mapBuffer.addObject(wall);
+            }
+
+            // Top wall for first row
+            if (z == 0 && horizontalWalls[z][x]) {
+                glm::vec3 wallPos = basePos + glm::vec3(0.0f, 0.5f, -cellSize / 2.0f);
+                wallPos.y = floorHeight + 0.5f;
+                Map::MapObject wall("topWall", "WidthWall", wallPos, glm::vec3(0.0f),
+                    glm::vec3(1.0f, 1.0f, 0.1f), shaderBase + ".vert", shaderBase + ".frag");
+                wall.mesh = generateMeshForType("Cube", 1.0f);
+                mapBuffer.addObject(wall);
+            }
+
+            // Left wall for first column
+            if (x == 0 && verticalWalls[z][x]) {
+                glm::vec3 wallPos = basePos + glm::vec3(-cellSize / 2.0f, 0.5f, 0.0f);
+                wallPos.y = floorHeight + 0.5f;
+                Map::MapObject wall("leftWall", "DepthWall", wallPos, glm::vec3(0.0f),
+                    glm::vec3(0.1f, 1.0f, 1.0f), shaderBase + ".vert", shaderBase + ".frag");
+                wall.mesh = generateMeshForType("Cube", 1.0f);
+                mapBuffer.addObject(wall);
+            }
+        }
+    }
+
+    std::cout << "Maze generated: " << width << " x " << depth << std::endl;
 }
-
-
