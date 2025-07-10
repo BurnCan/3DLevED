@@ -533,6 +533,8 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
     static float floorHeight = 0.0f;  // Default Y position of the floor
     static std::string selectedShaderBase = "basic";
     static bool addOpenSpaces = false;
+    static bool useDiagonal = false;
+
 
     ImGui::Begin("Maze Generator");
 
@@ -541,6 +543,7 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
     ImGui::InputFloat("Cell Size", &cellSize, 0.5f, 10.0f);
     ImGui::InputFloat("Floor Height", &floorHeight, -5.0f, 5.0f);  // Add this below cellSize
     ImGui::Checkbox("Add Random Open Spaces", &addOpenSpaces);
+    ImGui::Checkbox("Allow Diagonal Carving", &useDiagonal);
 
 
 
