@@ -532,6 +532,7 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
     static float cellSize = 1.0f;
     static float floorHeight = 0.0f;  // Default Y position of the floor
     static std::string selectedShaderBase = "basic";
+    static bool addOpenSpaces = false;
 
     ImGui::Begin("Maze Generator");
 
@@ -539,6 +540,8 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
     ImGui::InputInt("Maze Depth", &mazeDepth, 1, 50);
     ImGui::InputFloat("Cell Size", &cellSize, 0.5f, 10.0f);
     ImGui::InputFloat("Floor Height", &floorHeight, -5.0f, 5.0f);  // Add this below cellSize
+    ImGui::Checkbox("Add Random Open Spaces", &addOpenSpaces);
+
 
 
 
@@ -559,7 +562,8 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
     }
 
     if (ImGui::Button("Generate Maze")) {
-        GenerateMaze(mapBuffer, mazeWidth, mazeDepth, cellSize, floorHeight, selectedShaderBase);
+    GenerateMaze(mapBuffer, mazeWidth, mazeDepth, cellSize,
+                 floorHeight, selectedShaderBase, addOpenSpaces);
     }
 
     ImGui::End();
