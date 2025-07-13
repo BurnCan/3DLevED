@@ -159,7 +159,9 @@ bool Map::loadFromTextFile(const std::string& path) {
 }
 
 void Map::addObject(const MapObject& obj) {
-    objects.push_back(obj);
+    MapObject copy = obj;
+    copy.mesh = ShapeFactory::createShape(copy.type);  // <-- create the mesh based on type
+    objects.push_back(copy);
 }
 
 void Map::removeObjectByName(const std::string& objectName) {

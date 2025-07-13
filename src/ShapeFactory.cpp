@@ -1,6 +1,8 @@
 // ShapeFactory.cpp
 #include "ShapeFactory.h"
 #include <cmath>
+#include <ostream>
+#include <iostream>
 
 Mesh createCube(float size) {
     Mesh mesh;
@@ -198,3 +200,19 @@ Mesh createPyramid(float size) {
     return mesh;
 }
 
+Mesh ShapeFactory::createShape(const std::string& type) {
+    // Return a mesh based on the type of shape requested
+    if (type == "Cube") {
+        std::cout << "Creating Cube mesh\n";  // Debugging
+        return createCube(1.0f);  // Default size 1.0f
+    } else if (type == "Sphere") {
+        std::cout << "Creating Sphere mesh\n";  // Debugging
+        return createSphere(1.0f, 16, 16);  // Default radius, sectors, and stacks
+    } else if (type == "Pyramid") {
+        std::cout << "Creating Pyramid mesh\n";  // Debugging
+        return createPyramid(1.0f);  // Default size
+    } else {
+        std::cerr << "Unknown shape type: " << type << std::endl;  // Error if the type is unknown
+        return Mesh();  // Return an empty mesh for unsupported types
+    }
+}

@@ -3,6 +3,7 @@
 #include <string>
 #include "map.h"
 #include "shader_utility.h"
+#include "voxel.h"
 
 class Map;
 struct GLFWwindow;
@@ -16,6 +17,7 @@ namespace UI {
     void RenderMazeGenerator(Map& mapBuffer);
     void RenderShaderUtility(const glm::mat4& mvp);
     void RenderCameraDebugWindow();
+    void RenderVoxelEditor(Map& mapBuffer);
 
 
     void Shutdown();

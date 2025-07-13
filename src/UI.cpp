@@ -14,6 +14,7 @@
 #include <GLFW/glfw3.h>
 #include <unordered_set>
 #include "mazeGen.h"
+#include "voxel.h"
 
 static char mapFilename[128] = "default.txt";
 static bool showSavePopup = false;
@@ -572,6 +573,43 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
     ImGui::End();
 }
 
+
+static VoxelMap voxelMap;
+static int selectedX = 0, selectedZ = 0;
+static VoxelType currentType = VoxelType::Solid;
+
+void UI::RenderVoxelEditor(Map& mapBuffer) {
+    ImGui::Begin("Voxel Editor");
+
+    ImGui::InputInt("Width", &voxelMap.width);
+    ImGui::InputInt("Depth", &voxelMap.depth);
+    ImGui::InputFloat("Voxel Size", &voxelMap.voxelSize);
+    if (ImGui::Button("Resize Voxel Map")) {
+        voxelMap.resize(voxelMap.width, voxelMap.height, voxelMap.depth);
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Voxel Placement");
+    ImGui::SliderInt("X", &selectedX, 0, voxelMap.width - 1);
+    ImGui::SliderInt("Z", &selectedZ, 0, voxelMap.depth - 1);
+
+    const char* typeLabels[] = { "Empty", "Solid", "Floor", "Water" };
+    int current = static_cast<int>(currentType);
+    if (ImGui::Combo("Voxel Type", &current, typeLabels, IM_ARRAYSIZE(typeLabels)))
+        currentType = static_cast<VoxelType>(current);
+
+    if (ImGui::Button("Place Voxel")) {
+        voxelMap.voxels[selectedZ][0][selectedX].type = currentType;
+        GenerateVoxelObjects(voxelMap, mapBuffer);
+
+    }
+
+    //if (ImGui::Button("Generate Mesh")) {
+        //GenerateVoxelObjects(voxelMap, mapBuffer);
+    //}
+
+    ImGui::End();
+}
 
 
 

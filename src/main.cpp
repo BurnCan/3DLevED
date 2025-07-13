@@ -149,6 +149,7 @@ int main()
     UI::RenderShaderUtility(mvp);
     UI::RenderCameraDebugWindow();
     UI::RenderMazeGenerator(mapBuffer);
+    UI::RenderVoxelEditor(mapBuffer);
 
     // Grid (uses its own shader)
     camera.renderGrid(mvp);

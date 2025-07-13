@@ -3,6 +3,12 @@
 #define SHAPE_FACTORY_H
 
 #include "mesh.h"
+
+class ShapeFactory {
+public:
+    static Mesh createShape(const std::string& type);  // Ensure createShape is declared
+};
+
 Mesh createPyramid(float size);
 Mesh createCube(float size);
 Mesh createSphere(float radius, int sectors, int stacks);
