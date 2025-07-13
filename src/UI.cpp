@@ -575,13 +575,14 @@ void UI::RenderMazeGenerator(Map& mapBuffer) {
 
 
 static VoxelMap voxelMap;
-static int selectedX = 0, selectedZ = 0;
+static int selectedX = 0, selectedY = 0, selectedZ = 0;
 static VoxelType currentType = VoxelType::Solid;
 
 void UI::RenderVoxelEditor(Map& mapBuffer) {
     ImGui::Begin("Voxel Editor");
 
     ImGui::InputInt("Width", &voxelMap.width);
+    ImGui::InputInt("Height", &voxelMap.height);  // Added height control
     ImGui::InputInt("Depth", &voxelMap.depth);
     ImGui::InputFloat("Voxel Size", &voxelMap.voxelSize);
     if (ImGui::Button("Resize Voxel Map")) {
@@ -590,27 +591,25 @@ void UI::RenderVoxelEditor(Map& mapBuffer) {
 
     ImGui::Separator();
     ImGui::Text("Voxel Placement");
+
+    // Sliders for selecting voxel coordinates
     ImGui::SliderInt("X", &selectedX, 0, voxelMap.width - 1);
+    ImGui::SliderInt("Y", &selectedY, 0, voxelMap.height - 1);  // Added Y-axis
     ImGui::SliderInt("Z", &selectedZ, 0, voxelMap.depth - 1);
 
+    // Voxel type selection
     const char* typeLabels[] = { "Empty", "Solid", "Floor", "Water" };
     int current = static_cast<int>(currentType);
     if (ImGui::Combo("Voxel Type", &current, typeLabels, IM_ARRAYSIZE(typeLabels)))
         currentType = static_cast<VoxelType>(current);
 
     if (ImGui::Button("Place Voxel")) {
-        voxelMap.voxels[selectedZ][0][selectedX].type = currentType;
-        GenerateVoxelObjects(voxelMap, mapBuffer);
-
+        voxelMap.voxels[selectedZ][selectedY][selectedX].type = currentType;
+        GenerateVoxelObjects(voxelMap, mapBuffer);  // Rebuild map mesh
     }
-
-    //if (ImGui::Button("Generate Mesh")) {
-        //GenerateVoxelObjects(voxelMap, mapBuffer);
-    //}
 
     ImGui::End();
 }
-
 
 
 
