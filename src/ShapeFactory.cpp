@@ -200,19 +200,88 @@ Mesh createPyramid(float size) {
     return mesh;
 }
 
+Mesh createHexPrism(float radius, float height) {
+    Mesh mesh;
+    std::vector<float> vertices;
+
+    float halfHeight = height / 2.0f;
+    const int sides = 6;
+    const float angleStep = 2.0f * M_PI / sides;
+
+    // Generate bottom and top circle points
+    std::vector<glm::vec3> bottom;
+    std::vector<glm::vec3> top;
+
+    for (int i = 0; i < sides; ++i) {
+        float angle = i * angleStep;
+        float x = radius * cos(angle);
+        float z = radius * sin(angle);
+        bottom.emplace_back(x, -halfHeight, z);
+        top.emplace_back(x, halfHeight, z);
+    }
+
+    glm::vec3 bottomCenter(0.0f, -halfHeight, 0.0f);
+    glm::vec3 topCenter(0.0f, halfHeight, 0.0f);
+    glm::vec3 up(0.0f, 1.0f, 0.0f);
+    glm::vec3 down(0.0f, -1.0f, 0.0f);
+
+    // Bottom face
+    for (int i = 0; i < sides; ++i) {
+        int next = (i + 1) % sides;
+        vertices.insert(vertices.end(), {
+            bottomCenter.x, bottomCenter.y, bottomCenter.z, down.x, down.y, down.z,
+            bottom[next].x, bottom[next].y, bottom[next].z, down.x, down.y, down.z,
+            bottom[i].x, bottom[i].y, bottom[i].z, down.x, down.y, down.z,
+        });
+    }
+
+    // Top face
+    for (int i = 0; i < sides; ++i) {
+        int next = (i + 1) % sides;
+        vertices.insert(vertices.end(), {
+            topCenter.x, topCenter.y, topCenter.z, up.x, up.y, up.z,
+            top[i].x, top[i].y, top[i].z, up.x, up.y, up.z,
+            top[next].x, top[next].y, top[next].z, up.x, up.y, up.z,
+        });
+    }
+
+    // Side faces
+    for (int i = 0; i < sides; ++i) {
+        int next = (i + 1) % sides;
+        glm::vec3 v0 = bottom[i];
+        glm::vec3 v1 = bottom[next];
+        glm::vec3 v2 = top[next];
+        glm::vec3 v3 = top[i];
+
+        // Calculate normal using cross product
+        glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v3 - v0));
+
+        vertices.insert(vertices.end(), {
+            v0.x, v0.y, v0.z, normal.x, normal.y, normal.z,
+            v1.x, v1.y, v1.z, normal.x, normal.y, normal.z,
+            v2.x, v2.y, v2.z, normal.x, normal.y, normal.z,
+
+            v0.x, v0.y, v0.z, normal.x, normal.y, normal.z,
+            v2.x, v2.y, v2.z, normal.x, normal.y, normal.z,
+            v3.x, v3.y, v3.z, normal.x, normal.y, normal.z,
+        });
+    }
+
+    mesh.setVertices(vertices);
+    return mesh;
+}
+
 Mesh ShapeFactory::createShape(const std::string& type) {
-    // Return a mesh based on the type of shape requested
     if (type == "Cube") {
-        std::cout << "Creating Cube mesh\n";  // Debugging
-        return createCube(1.0f);  // Default size 1.0f
+        return createCube(1.0f);
     } else if (type == "Sphere") {
-        std::cout << "Creating Sphere mesh\n";  // Debugging
-        return createSphere(1.0f, 16, 16);  // Default radius, sectors, and stacks
+        return createSphere(1.0f, 16, 16);
     } else if (type == "Pyramid") {
-        std::cout << "Creating Pyramid mesh\n";  // Debugging
-        return createPyramid(1.0f);  // Default size
+        return createPyramid(1.0f);
+    } else if (type == "HexPrism") {
+        return createHexPrism(0.5f, 1.0f);  // Example: radius = 0.5, height = 1.0
     } else {
-        std::cerr << "Unknown shape type: " << type << std::endl;  // Error if the type is unknown
-        return Mesh();  // Return an empty mesh for unsupported types
+        std::cerr << "Unknown shape type: " << type << std::endl;
+        return Mesh();  // empty mesh
     }
 }

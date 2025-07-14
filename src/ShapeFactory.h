@@ -12,6 +12,7 @@ public:
 Mesh createPyramid(float size);
 Mesh createCube(float size);
 Mesh createSphere(float radius, int sectors, int stacks);
+Mesh createHexPrism(float radius, float height);
 
 // Central mesh generation dispatch
 Mesh generateMeshForType(const std::string& type, float scale);

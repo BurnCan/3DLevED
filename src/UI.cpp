@@ -353,7 +353,7 @@ ImGui::PopID();
     }
 
     // === Add Object ===
-    static const char* shapeOptions[] = { "Cube", "Sphere", "Pyramid", "WidthWall", "DepthWall", "Floor" };
+    static const char* shapeOptions[] = { "Cube", "Sphere", "Pyramid", "WidthWall", "DepthWall", "Floor", "HexPrism" };
     static int currentShapeIndex = 0;
     static char objectName[64] = "NewObject";
 
@@ -427,7 +427,7 @@ ImGui::PopID();
             scale = glm::vec3(1.0f, 0.1f, 1.0f);
             position = glm::vec3(0.0f, 0.0f, 0.0f);
         }
-                else if (shape == "Cube" || shape == "Sphere" || shape == "Pyramid") {
+                else if (shape == "Cube" || shape == "Sphere" || shape == "Pyramid" || shape == "HexPrism") {
                     // Keep scale uniform for standard primitives
                     scale = glm::vec3(1.0f);
                 }

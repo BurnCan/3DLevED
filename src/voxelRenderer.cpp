@@ -10,7 +10,7 @@ void AddVoxelToMap(const Voxel& voxel, int x, int y, int z, float size, Map& map
         return;
 
     std::string name = "Voxel_" + std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    std::string type = "Cube"; // You can change this based on voxel.type if desired
+    std::string type = "HexPrism"; // You can change this based on voxel.type if desired
 
     glm::vec3 position(x * size, y * size, z * size);
     glm::vec3 rotation(0.0f); // Default rotation
